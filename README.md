@@ -23,3 +23,5 @@ To use a psana machine to analyze data please use nomachine:
   Get list of available licences using: '/reg/common/package/scripts/matlic'.
   Use available machine with: 'ssh -Y machinename'.
   4. Start Matlab using: '/reg/common/package/matlab/R2016a/bin/matlab'.
+
+holoShow reads scattering image data files in ASCII format with ending '.dat'!
