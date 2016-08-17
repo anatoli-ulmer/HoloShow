@@ -18,6 +18,6 @@ To use a psana machine to analyze data please use nomachine:
   1. get nomachine - https://www.nomachine.com/
   2. login into psnxana - howto: https://confluence.slac.stanford.edu/display/PCDS/Remote+Visualization
   3. ssh to a psana machine with available Matlab licence. 
-      Get list of available licences using: /reg/common/package/scripts/matlic
-      Use available machine with: ssh -Y machinename
+  Get list of available licences using: /reg/common/package/scripts/matlic
+  Use available machine with: ssh -Y machinename
   4. Start Matlab using: /reg/common/package/matlab/R2016a/bin/matlab
