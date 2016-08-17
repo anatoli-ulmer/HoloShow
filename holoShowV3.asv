@@ -22,7 +22,7 @@ function varargout = holoShowV3(varargin)
 
 % Edit the above text to modify the response to help holoShowV3
 
-% Last Modified by GUIDE v2.5 17-Aug-2016 18:01:41
+% Last Modified by GUIDE v2.5 17-Aug-2016 11:37:14
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -494,11 +494,11 @@ function goodShot_pushbutton_Callback(hObject, eventdata, handles)
 shotlist=get(handles.filenames_listbox, 'String');
 shotname=char(shotlist(get(handles.filenames_listbox, 'Value'))) %#ok<NOPRT>
 foldername=shotname(1:5);
-anapath = fullfile(handles.sourcepath, 'analysis','good_shots');
-if ~exist(anapath, 'dir')
-    mkdir(anapath)
+
+if ~exist('goodShots','dir')
+    mkdir('goodShots')
 end
-fileID=fopen(fullfile(anapath,[foldername,'.txt']),'a');
+fileID=fopen(fullfile('goodShots',[foldername,'.txt']),'a');
 fprintf(fileID,'%s\n',shotname);
 fclose(fileID);
 
@@ -577,9 +577,53 @@ handles.wiener=90^2;
 if get(handles.decon_checkbox,'value')
     handles.hologram.deconvoluted = cluster_deconvolution(handles.hologram.propagated, handles.mask,...
         handles.clusterradius, handles.reconSpec, handles.wiener);
-    handles.recon = - ift2(handles.hologram.deconvoluted);
+    %     handles.hologram.deconvoluted = handles.hologram.deconvoluted.*handles.mask;handles.hologram.deconvoluted;
+    %     figure(23423); mi = max(log10(abs(handles.hologram.deconvoluted(:)))); colormap fire;
+    %     imagesc(log10(abs(handles.hologram.deconvoluted)),[mi-4,mi]); axis square;
+    %     figure(3242354); imagesc(handles.mask);
+    %     handles.hologram.deconvoluted = handles.hologram.deconvoluted.*handles.mask;
+    %     handles.hologram.deconvoluted = propagate(abs(handles.hologram.deconvoluted), handles.phase);
+%     M = handles.mask;
+    handles.recon=fftshift(ifft2(fftshift(handles.hologram.deconvoluted)));
+    handles.recon=-handles.recon;
+
+    R=37*1e-9;
+    x = 1:800;
+    x = x*75e-3;
+    lambda = 1.0530e-9;
+    theta = atan(x./735);
+    q = theta*2*pi/lambda;
+    G = 3*(sin(q.*R)-q.*R.*cos(q.*R)).*q.^(-3)/R^2;
+    
+    
+    [xx,yy] = meshgrid(-512:511,-512:511);
+    xx(xx==0)=1;
+    Freference = G(round(sqrt(xx.^2+yy.^2)));
+    Freference = Freference/max(abs(Freference(:)));
+    
+    Fref = Freference;
+    Fref = Fref/sum(abs(Fref(:)));
+    Imeas = handles.hologram.masked;
+    Imeas = Imeas/sum(Imeas(:));
+    decon = zeros(1024);
+    decon(handles.rect(2):handles.rect(2)+handles.rect(4),handles.rect(1):handles.rect(1)+handles.rect(3)) = handles.recon(handles.rect(2):handles.rect(2)+handles.rect(4),handles.rect(1):handles.rect(1)+handles.rect(3));
+    Fdecon = fftshift(fft2(fftshift(decon)));
+    Fdecon = Fdecon./sum(abs(Fdecon(:)));
+    
+    k=1;
+    
+%     for q=-10:0.1:10
+%         temp = abs(exp(q)*Fref + Fdecon).^2;
+%         temp = temp/sum(temp(:));
+%         figure(76); imagesc(log10(abs(Imeas-temp))); drawnow;
+%         err_ampl(k) = sum(abs(Imeas(:))-temp(:));
+%         k=k+1;
+%     end
+    
+%     figure(986); plot(err_ampl);
+
 else
-    handles.recon = ift2(handles.hologram.propagated);
+    handles.recon=fftshift(ifft2(fftshift(handles.hologram.propagated)));
 end
 
 figure(23446);
@@ -606,6 +650,16 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
+function save_data_pushbutton_Callback(hObject, eventdata, handles)
+save_holoShow(handles);
+
+
+function load_data_pushbutton_Callback(hObject, eventdata, handles)
+[FileName,PathName] = uigetfile('*.m');
+handles = load(fullfile(PathName, FileName),'-mat');
+guidata(hObject, handles);
+
+
 function find_decon_pushbutton_Callback(hObject, eventdata, handles)
 fprintf('looking for cluster radius ...');
 handles.hologram.propagated = propagate(abs(handles.hologram.masked), handles.phase);
@@ -624,3 +678,96 @@ decon_checkbox_Callback(hObject, eventdata, handles);
 
 fprintf('done! \n')
 guidata(hObject, handles);
+
+
+function tais_pushbutton_Callback(hObject, eventdata, handles)
+holo = handles.hologram.masked;
+[X,Y] = meshgrid(-size(holo,1)/2:size(holo,1)/2-1,-size(holo,2)/2:size(holo,2)/2-1);
+
+newFilter = X.^2+Y.^2;
+figure(764654);
+set(gcf, 'Name', 'Filter'); % gcf=get current figure
+imagesc(newFilter); axis square; colorbar;
+newHolo = handles.hologram.masked.*newFilter;
+imagesc(log10(abs(newHolo)));axis square; colorbar;
+
+newHolo = propagate(abs(newHolo), handles.phase);
+newHolo = newHolo.*exp(1i*handles.phaseOffset);
+
+handles.reconNew=fftshift(ifft2(fftshift(newHolo)));
+
+figure(234468);
+imagesc(part_and_scale(handles.reconNew(handles.rect(2):handles.rect(2)+handles.rect(4),handles.rect(1):handles.rect(1)+handles.rect(3)),...
+    handles.logSwitch, handles.partSwitch));
+axis square;
+colormap gray;
+%colormap(handles.colormap);
+refreshImage(hObject, eventdata, handles)
+guidata(hObject, handles);
+
+
+function save_image_pushbutton_Callback(hObject, eventdata, handles)
+h=get(0,'Children');
+save_images(h,handles.currentFile);
+
+
+function damn_pushbutton_Callback(hObject, eventdata, handles)
+
+for i=1:1%size(handles.filenames,2)
+    set(handles.scale_checkbox, 'Value', false)
+    handles.fileIndex = i; % get index of selection
+    handles = select_hologram(hObject, eventdata, handles); % GRAB HOLOGRAM
+    fprintf('please choose noise \n');
+    noise_pushbutton_Callback(hObject, eventdata, handles);
+    set(handles.filenames_listbox, 'Value', handles.fileIndex);
+    try
+        handles = select_hologram(hObject, eventdata, handles);
+    catch
+        return
+    end
+    CCsize=70;
+    handles.centroids = find_CC(handles.recon);
+    nbrCCs = size(handles.centroids,1);
+    
+    for CC=1:nbrCCs
+        set(handles.decon_checkbox, 'Value', false)
+        handles.rect(1) = round(handles.centroids(CC,1)-CCsize/2);
+        handles.rect(2) = round(handles.centroids(CC,2)-CCsize/2);
+        handles.rect(3) = CCsize;
+        handles.rect(4) = CCsize;
+        handles = show_recon(hObject, eventdata, handles);
+        find_phase_pushbutton_Callback(hObject, eventdata, handles);
+        
+        [columnsToShift, rowsToshift, handles.phaseOffset] = find_center(handles.hologram.masked, handles.phase, handles.rect);
+        handles.xcenter = handles.xcenter + columnsToShift;
+        handles.ycenter = handles.ycenter + rowsToshift;
+        handles = refresh_hologram(hObject, eventdata, handles);
+        [columnsToShift, rowsToshift, handles.phaseOffset] = find_center(handles.hologram.masked, handles.phase, handles.rect);
+        handles.xcenter = handles.xcenter + columnsToShift;
+        handles.ycenter = handles.ycenter + rowsToshift;
+        handles = refresh_hologram(hObject, eventdata, handles);
+
+        powerSpec_pushbutton_Callback(hObject, eventdata, handles);
+        SNR_pushbutton_Callback(hObject, eventdata, handles);
+        find_decon_pushbutton_Callback(hObject, eventdata, handles);
+        fprintf('please choose deconvolution radius and press enter \n');
+        set(handles.decon_checkbox, 'Value', true);
+        decon_checkbox_Callback(hObject, eventdata, handles);
+        pause
+        save_image_pushbutton_Callback(hObject, eventdata, handles);
+    end
+    
+    %     do_it_yourself(hObject, eventdata, handles, ...
+    %         @find_phase_pushbutton_Callback, ...
+    %         @center_pushbutton_Callback, ...
+    %         @powerSpec_pushbutton_Callback, ...
+    %         @find_decon_pushbutton_Callback, ...
+    %         @SNR_pushbutton_Callback);
+end
+
+
+function showDHS_pushbutton_Callback(hObject, eventdata, handles)
+DHSfile = fullfile(handles.pathname, '..', ['hitScore_', handles.pathname(end-5:end-1), '.dat']);
+handles.runDHS = dlmread(DHSfile);
+figure(61);
+plot(handles.runDHS(handles.runDHS>200) )
