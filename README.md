@@ -10,7 +10,7 @@ Tested for Matlab R2015a with following toolboxes:
   matlab
   signal_toolbox
 
-Decreasing needed toolboxes is in progress.
+Decreasing amount of needed toolboxes is in progress.
 
 To start run 'holoShowV3.m' in Matlab. 
 
