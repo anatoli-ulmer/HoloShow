@@ -103,7 +103,7 @@ varargout{1} = handles.output;
 
 function load_pushbutton_Callback(hObject, eventdata, handles)
 set(handles.filenames_listbox, 'Value', 1); % set selection to first entry
-[handles.filenames, handles.pathname] = uigetfile('*.dat','select hologram files','E:\LCLS\data','MultiSelect','On'); % get list of files and path
+[handles.filenames, handles.pathname] = uigetfile('*.dat;*.mat','select hologram files','E:\LCLS\data','MultiSelect','On'); % get list of files and path
 set(handles.filenames_listbox, 'String', handles.filenames);
 guidata(hObject, handles);
 

@@ -1,5 +1,5 @@
 function handles_return = select_hologram(hObject, eventdata, handles)
-
+tic
 if iscell(handles.filenames)
     handles.currentFile = handles.filenames{handles.fileIndex};
 else
@@ -8,7 +8,13 @@ end
 
 %% READ RAW DATA
 fprintf('loading file: %s ...', handles.currentFile);
-handles.hologram.orig = dlmread(fullfile(handles.pathname,handles.currentFile));
+switch handles.currentFile(end-2:end)
+    case 'dat'
+        handles.hologram.orig = dlmread(fullfile(handles.pathname,handles.currentFile));
+    case 'mat'
+        load(fullfile(handles.pathname,handles.currentFile));
+        handles.hologram.orig = data.hologram;
+end
 handles.hologram.orig = handles.hologram.orig(1:1024,1:1024);
 fprintf(' done! \n');
 
@@ -68,3 +74,4 @@ refreshImage(hObject, eventdata, handles)
 
 %% RETURN HANDLES STRUCTURE
 handles_return = handles;
+toc
