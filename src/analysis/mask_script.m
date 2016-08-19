@@ -92,11 +92,11 @@ mask(513+slit:end,:) = smask(513+slit:end,:);
 data(isnan(data)) = 0;
 
 % HIGHPASS FILTERING %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Modified see below!
-% if HP_filter
-%     [X, Y] = meshgrid(-512:511,-512:511);
-%     lowp = X.^2+Y.^2<HP_radius^2;
-%     mask(lowp)=0;
-% end
+if HP_filter
+    [X, Y] = meshgrid(-512:511,-512:511);
+    lowp = X.^2+Y.^2<HP_radius^2;
+    mask(lowp)=0;
+end
 
 % LOWPASS FILTERING
 if LP_filter
@@ -141,51 +141,29 @@ end
 
 oldmask = mask;
 olddata = data;
-% unsmoothdata = data.*mask;
-% dlmwrite('unsmoothedData.dat',unsmoothdata);
-
 
 %% SMOOTH MASK
 data = olddata;
 mask = oldmask;
 
-% tic
-% H = fspecial('disk',SMOOTH_FACTOR);
-% blurred = imfilter(mask,H,'replicate');
-% 
-% newMask = 1-(blurred<0.99);
-% H2 = fspecial('disk',SMOOTH_FACTOR);
-% newMask = imfilter(double(newMask),H2,'replicate');
-% toc
-
-% tic
-
 blurred=imgaussfilt(mask,SMOOTH_FACTOR);
 newMask = 1-(blurred<0.99);
 newMask=imgaussfilt(newMask,SMOOTH_FACTOR);
-% toc
 
-% tic
-% blurred=smooth_mask(mask,'sigma',SMOOTH_FACTOR);
-% newMask = 1-(blurred<0.99);
-% newMask=smooth_mask(newMask,'sigma',SMOOTH_FACTOR);
-% toc
-
-if HP_filter
-    [X, Y] = meshgrid(-512:511,-512:511);
-    HP = X.^2+Y.^2<HP_radius^2;
-    HP = double(~HP>0);
-    
-    HPmask = (1./(1+exp(-(sqrt(X.^2+Y.^2)-HP_radius-HP_SMOOTH_FACTOR)/HP_SMOOTH_FACTOR)));
-    HPmask = HPmask-min(HPmask(:));
-    HPmask = HPmask./max(HPmask(:));
-    HPmask(~HP)=0;
-    newMask = newMask.*HPmask;
-    mask = mask.*HP;
-end
+% if HP_filter
+%     [X, Y] = meshgrid(-512:511,-512:511);
+%     HP = X.^2+Y.^2<HP_radius^2;
+%     HP = double(~HP>0);
+%     
+%     HPmask = (1./(1+exp(-(sqrt(X.^2+Y.^2)-HP_radius-HP_SMOOTH_FACTOR)/HP_SMOOTH_FACTOR)));
+%     HPmask = HPmask-min(HPmask(:));
+%     HPmask = HPmask./max(HPmask(:));
+%     HPmask(~HP)=0;
+%     newMask = newMask.*HPmask;
+%     mask = mask.*HP;
+% end
 
 newMask(~mask)=0;
-% data = data;
 
 if showSMOOTH
     figure(3);
@@ -193,11 +171,8 @@ if showSMOOTH
     subplot(122); imagesc(log(abs(newMask)),[0 8]); axis square; colormap fire; colorbar;
 end
 
-% dlmwrite('testmask.dat', newMask);
-% dlmwrite('testdata.dat',data.*mask);
-% newMask(1:512,:)=0;
-
 handles.mask =newMask;
 handles.hardmask = mask;
 handles.hologram.masked = data.*newMask;
+
 handles_return = handles;

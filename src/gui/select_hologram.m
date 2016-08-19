@@ -60,17 +60,17 @@ handles.rect(3) = size(handles.hologram.orig,1)-1;
 handles.rect(4) = size(handles.hologram.orig,2)-1;
 
 %% REFRESH PHASE SLIDER AND ARROW KEY LISTENER
-% try %#ok<*TRYNC>
-%     delete(handles.phaseListener);
-% end
+try %#ok<*TRYNC>
+    delete(handles.phaseListener);
+end
+handles.phaseListener = addlistener(handles.phase_slider,'ContinuousValueChange',@(hObject, eventdata) refreshImage(hObject, eventdata, guidata(hObject)));
 % try %#ok<*TRYNC>
 %     delete(handles.arrowKeysListener);
 % end
-% handles.phaseListener = addlistener(handles.phase_slider,'ContinuousValueChange',@(hObject, eventdata) refreshImage(hObject, eventdata, handles));
 % set(handles.reconstructionFigure,'KeyPressFcn',@(hObject, eventdata) arrow_keys_callback(hObject, eventdata, handles));
 
 %% REFRESH PLOT
-refreshImage(hObject, eventdata, handles)
+handles = refreshImage(hObject, eventdata, handles);
 
 %% RETURN HANDLES STRUCTURE
 handles_return = handles;

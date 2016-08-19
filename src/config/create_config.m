@@ -7,7 +7,7 @@ if nargin < 1
     filename = 'config_holoShow.mat';
 end
 
-config_file.lambda = 1.55e-9;
+config_file.lambda = 1.053e-9;
 config_file.detDistance = 0.735;
 config_file.origmask = dlmread('mask.dat');
 config_file.origmask = config_file.origmask(1:1024,1:1024);

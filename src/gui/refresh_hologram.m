@@ -37,5 +37,5 @@ end
 % end
 % handles.phaseListener = addlistener(handles.phase_slider,'ContinuousValueChange',@(hObject, eventdata) refreshImage(hObject, eventdata, handles));
 % set(handles.reconstructionFigure,'KeyPressFcn',@(hObject, eventdata) arrow_keys_callback(hObject, eventdata, handles));
-refreshImage(hObject, eventdata, handles)
+handles = refreshImage(hObject, eventdata, handles);
 handles_return = handles;

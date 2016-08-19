@@ -52,7 +52,7 @@ function holoShowV3_OpeningFcn(hObject, eventdata, handles, varargin)
 % varargin   command line arguments to holoShowV3 (see VARARGIN)
 
 % Choose default command line output for holoShowV3
-handles.sourcepath = pwd;
+[handles.sourcepath,~,~] = fileparts(mfilename('fullpath'));
 addpath(genpath(handles.sourcepath));
 
 handles.output = hObject;
@@ -215,7 +215,7 @@ if handles.fileIndex < 1
 end
 set(handles.filenames_listbox, 'Value', handles.fileIndex);
 handles = select_hologram(hObject, eventdata, handles);
-guidata(hObject, handles);
+guidata(handles.output, handles);
 
 
 function range_edit_Callback(hObject, eventdata, handles)
@@ -233,7 +233,7 @@ end
 function phase_edit_Callback(hObject, eventdata, handles)
 handles.phase = str2double(get(handles.phase_edit, 'String'));
 set(handles.phase_slider, 'Value', handles.phase);
-refreshImage(hObject, eventdata, handles)
+handles = refreshImage(hObject, eventdata, handles);
 guidata(hObject, handles);
 
 
@@ -260,7 +260,7 @@ maxPhase = get(handles.phase_slider, 'Max');
 handles.phase = find_focus(handles.hologram.masked, handles.rect, -maxPhase, maxPhase, 100, true, true, get(handles.makeGIF_checkbox,'value'));
 set(handles.phase_slider, 'Value', handles.phase);
 set(handles.phase_edit, 'String', num2str(round(handles.phase)));
-refreshImage(hObject, eventdata, handles);
+handles = refreshImage(hObject, eventdata, handles);
 guidata(hObject, handles);
 
 

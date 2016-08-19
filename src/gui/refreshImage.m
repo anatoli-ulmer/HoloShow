@@ -1,4 +1,5 @@
-function refreshImage(hObject, eventdata, handles)
+function handles_return = refreshImage(hObject, eventdata, handles)
+
 handles.phase = get(handles.phase_slider, 'Value');
 
 handles.hologram.propagated = propagate(abs(handles.hologram.masked), handles.phase, handles.lambda, handles.detDistance);
@@ -19,3 +20,5 @@ else
     axis tight
 end
 drawnow
+
+handles_return = handles;

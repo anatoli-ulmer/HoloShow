@@ -11,7 +11,7 @@ function hologram = propagate(hologram, prop_l, lambda, CCD_S_DIST, meth)
 if nargin < 5
     if nargin < 4
         if nargin < 3
-            lambda = 1.053;
+            lambda = 1.053e-9;
         end
         CCD_S_DIST = 0.735;
     end
@@ -22,15 +22,13 @@ end
 PX_SIZE = 75e-6;
 H_center_q=Xrange/2+1;
 H_center_p=Yrange/2+1;
-N=round(prop_l/lambda);
-prop_l =N*lambda;
 [p,q] = meshgrid(1:Xrange, 1:Yrange);
 
 switch meth
     case 'plane-wave'
-        tempPhase=(prop_l*2*pi/lambda)*(1-((PX_SIZE/CCD_S_DIST)^2)*((q-H_center_q).^2+ (p-H_center_p).^2)).^(1/2); % plane wave propagation
+        tempPhase=(prop_l*2*pi/(lambda*1e9))*(1-((PX_SIZE/CCD_S_DIST)^2)*((q-H_center_q).^2+ (p-H_center_p).^2)).^(1/2); % plane wave propagation
     case 'fresnel'
-        tempPhase=-prop_l*pi*lambda*(PX_SIZE/CCD_S_DIST)^2*((q-H_center_q).^2+ (p-H_center_p).^2); % Fresnel Rayleigh propagator
+        tempPhase=-prop_l*pi*(lambda*1e9)*(PX_SIZE/CCD_S_DIST)^2*((q-H_center_q).^2+ (p-H_center_p).^2); % Fresnel Rayleigh propagator
 end
 
 hologram = hologram.*exp(1i*tempPhase);
