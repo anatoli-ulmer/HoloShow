@@ -49,12 +49,13 @@ drawnMask = handles.drawnMask;
 %15     PIXEL_IS_PHOTON_BACKGROUND_CORRECTED = 16384
 
 mask = ones(1024);
-
-for n=1:1024 % select bad pixels and convert to binary mask
-    temp = de2bi(origmask(n,:));
-    test = [temp, zeros(1024,16-size(temp,2))];
-    mask(n,:)=test(:,1)+test(:,2)+test(:,3)+test(:,4)+test(:,5)+test(:,7)+test(:,10);%+test(:,13)+test(:,8);%+test(:,11);
-end
+% 
+% for n=1:1024 % select bad pixels and convert to binary mask
+%     temp = de2bi(origmask(n,:));
+%     test = [temp, zeros(1024,16-size(temp,2))];
+%     mask(n,:)=test(:,1)+test(:,2)+test(:,3)+test(:,4)+test(:,5)+test(:,7)+test(:,10);%+test(:,13)+test(:,8);%+test(:,11);
+% end
+load('src/files/binary_mask.mat');
 
 mask = ~mask; % invert and convert to binary
 mask(490:557,485:553)=0;

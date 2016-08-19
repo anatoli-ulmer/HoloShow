@@ -58,28 +58,15 @@ addpath(genpath(handles.sourcepath));
 handles.output = hObject;
 handles.hologramFigure = figure('Name','hologram');
 handles.reconstructionFigure = figure('Name','reconstruction');
-handles.minScale = -2;
-handles.maxScale = 2;
 handles.square = get(handles.square_checkbox, 'Value');
 handles.logSwitch = get(handles.log_checkbox, 'Value');
 handles.partSwitch = get(get(handles.part_buttongroup, 'SelectedObject'), 'String');
-handles.origmask = dlmread('mask.dat');
-handles.origmask = handles.origmask(1:1024,1:1024);
-handles.drawnMask = dlmread('drawnMask.dat');
 handles.image_correction = true;
-handles.colormap = 'fire';
-handles.centroids = [0,0];
-handles.xcenter = 0;
-handles.ycenter = 0;
-handles.shift = 0;
-handles.slit = -2;
-handles.phase = 0;
-handles.phaseOffset = 0;
-handles.HPfiltering = false;
-handles.LPfiltering = false;
-handles.HPfrequency = 60;
-handles.LPfrequency = 332;
-handles.clusterradius=37;
+
+load('config_holoShow.mat'); % To change standard values use 'src/config/create_config.m' to change config file
+for fn = fieldnames(config_file)'
+   handles.(fn{1}) = config_file.(fn{1});
+end
 
 set(groot,'DefaultFigureColormap',gray)
 
@@ -559,7 +546,7 @@ function makeGIF_checkbox_Callback(hObject, eventdata, handles)
 
 function decon_checkbox_Callback(hObject, eventdata, handles)
 fprintf('deconvoluting ...');
-handles.hologram.propagated = propagate(abs(handles.hologram.masked), handles.phase);
+handles.hologram.propagated = propagate(abs(handles.hologram.masked), handles.phase, handles.lambda, handles.detDistance);
 handles.hologram.propagated = handles.hologram.propagated.*exp(1i*handles.phaseOffset);
 
 if isfield(handles,'SNR2D')
@@ -608,7 +595,7 @@ end
 
 function find_decon_pushbutton_Callback(hObject, eventdata, handles)
 fprintf('looking for cluster radius ...');
-handles.hologram.propagated = propagate(abs(handles.hologram.masked), handles.phase);
+handles.hologram.propagated = propagate(abs(handles.hologram.masked), handles.phase, handles.lambda, handles.detDistance);
 handles.hologram.propagated = handles.hologram.propagated.*exp(1i*handles.phaseOffset);
 
 % if isfield(handles,'SNR2D')

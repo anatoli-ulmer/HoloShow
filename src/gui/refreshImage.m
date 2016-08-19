@@ -1,7 +1,7 @@
 function refreshImage(hObject, eventdata, handles)
 handles.phase = get(handles.phase_slider, 'Value');
 
-handles.hologram.propagated = propagate(abs(handles.hologram.masked), handles.phase);
+handles.hologram.propagated = propagate(abs(handles.hologram.masked), handles.phase, handles.lambda, handles.detDistance);
 handles.hologram.propagated = handles.hologram.propagated.*exp(1i*handles.phaseOffset);
 
 if get(handles.decon_checkbox,'value')

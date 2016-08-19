@@ -29,13 +29,13 @@ if get(handles.scale_checkbox, 'Value')
     axes(handles.reconAxes);
     caxis([handles.minScale, handles.maxScale]);
 end
-try %#ok<*TRYNC>
-    delete(handles.phaseListener);
-end
-try %#ok<*TRYNC>
-    delete(handles.arrowKeysListener);
-end
-handles.phaseListener = addlistener(handles.phase_slider,'ContinuousValueChange',@(hObject, eventdata) refreshImage(hObject, eventdata, handles));
-set(handles.reconstructionFigure,'KeyPressFcn',@(hObject, eventdata) arrow_keys_callback(hObject, eventdata, handles));
+% try %#ok<*TRYNC>
+%     delete(handles.phaseListener);
+% end
+% try %#ok<*TRYNC>
+%     delete(handles.arrowKeysListener);
+% end
+% handles.phaseListener = addlistener(handles.phase_slider,'ContinuousValueChange',@(hObject, eventdata) refreshImage(hObject, eventdata, handles));
+% set(handles.reconstructionFigure,'KeyPressFcn',@(hObject, eventdata) arrow_keys_callback(hObject, eventdata, handles));
 refreshImage(hObject, eventdata, handles)
 handles_return = handles;
