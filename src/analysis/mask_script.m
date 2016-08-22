@@ -18,7 +18,7 @@ shift = handles.shift;
 SMOOTH_FACTOR = 15; % smooth parameter for mask
 
 % Switches for what to show
-showMASKS = true; % show used mask
+showMASKS = false; % show used mask
 showCM = false; % show common mode correction
 showSMOOTH = false; % show smoothed mask and pattern
 

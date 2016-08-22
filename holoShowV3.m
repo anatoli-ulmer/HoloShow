@@ -22,7 +22,7 @@ function varargout = holoShowV3(varargin)
 
 % Edit the above text to modify the response to help holoShowV3
 
-% Last Modified by GUIDE v2.5 22-Aug-2016 17:59:21
+% Last Modified by GUIDE v2.5 22-Aug-2016 19:11:15
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -627,3 +627,20 @@ handles.load_mask = get(handles.load_mask_checkbox, 'Value');
 handles = refresh_hologram(hObject, eventdata, handles);
 guidata(hObject, handles);
 
+
+function wavelength_edit_Callback(hObject, eventdata, handles)
+handles.lambda = str2double(get(handles.wavelength_edit, 'String'))*1e-9;
+handles = refresh_hologram(hObject, eventdata, handles);
+guidata(hObject, handles);
+
+
+function wavelength_edit_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to wavelength_edit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
