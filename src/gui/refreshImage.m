@@ -2,13 +2,12 @@ function handles_return = refreshImage(hObject, eventdata, handles)
 
 handles.phase = get(handles.phase_slider, 'Value');
 
-handles.hologram.propagated = propagate(abs(handles.hologram.masked), handles.phase, handles.lambda, handles.detDistance);
-handles.hologram.propagated = handles.hologram.propagated.*exp(1i*handles.phaseOffset);
-
 if get(handles.decon_checkbox,'value')
-    handles.recon = fftshift(ifft2(fftshift(handles.hologram.deconvoluted)));
+    handles.recon = ift2(handles.hologram.deconvoluted);
 else
-    handles.recon = fftshift(ifft2(fftshift(handles.hologram.propagated)));
+    handles.hologram.propagated = propagate(abs(handles.hologram.masked), handles.phase, handles.lambda, handles.detDistance);
+    handles.hologram.propagated = handles.hologram.propagated.*exp(1i*handles.phaseOffset);
+    handles.recon = ift2(handles.hologram.propagated);
 end
 
 axes(handles.reconAxes);

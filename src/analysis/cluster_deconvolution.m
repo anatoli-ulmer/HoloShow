@@ -1,14 +1,12 @@
-function deconvolved = cluster_deconvolution(hologram, mask, clusterradius, reconSpec, wiener)
+function deconvolved = cluster_deconvolution(hologram, mask, clusterradius, reconSpec, wiener, lambda)
 
 R=clusterradius*1e-9;
 x = 1:800;
 x = x*75e-3;
-lambda = 1.0530e-9;
 theta = atan(x./735);
 q = theta*2*pi/lambda;
 G = 3*(sin(q.*R)-q.*R.*cos(q.*R)).*q.^(-3)/R^2;
 
-% figure(34234); semilogy(abs(G(1:511)));
 figure(85);
 subplot(121);
 try
@@ -27,9 +25,6 @@ Freference = Freference/max(abs(Freference(:)));
 Freference = Freference.*mask;
 Freference = Freference*max(abs(hologram(:)));
 
-% figure(23444); imagesc(log10(abs(Freference))); axis square
-
 deconvolved=hologram.*conj(Freference);
-% deconvolved=deconvolved./(abs(Freference).^2+wiener);
 deconvolved=deconvolved./(abs(Freference).^2+wiener);
 
