@@ -7,11 +7,12 @@ if nargin < 1
     filename = 'config_holoShow.mat';
 end
 
+[pathstr,~,~] = fileparts(mfilename('fullpath'));
+
 config_file.lambda = 1.053e-9;
 config_file.detDistance = 0.735;
-config_file.origmask = dlmread('mask.dat');
-config_file.origmask = config_file.origmask(1:1024,1:1024);
-config_file.drawnMask = dlmread('drawnMask.dat');
+config_file.load_binary_mask = true;
+config_file.do_CM = false;
 config_file.minScale = -2;
 config_file.maxScale = 2;
 config_file.colormap = 'fire';
@@ -28,5 +29,4 @@ config_file.HPfrequency = 60;
 config_file.LPfrequency = 332;
 config_file.clusterradius = 37;
 
-[pathstr,~,~] = fileparts(mfilename('fullpath'));
 save(fullfile(pathstr, filename), 'config_file');

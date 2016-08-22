@@ -68,6 +68,11 @@ for fn = fieldnames(config_file)'
    handles.(fn{1}) = config_file.(fn{1});
 end
 
+if handles.load_binary_mask
+    load('src/files/mask.mat');
+    handles.origmask = (~mask).*drawnMask;
+end
+
 set(groot,'DefaultFigureColormap',gray)
 
 % Update handles structure
