@@ -22,7 +22,7 @@ function varargout = holoShowV3(varargin)
 
 % Edit the above text to modify the response to help holoShowV3
 
-% Last Modified by GUIDE v2.5 17-Aug-2016 18:01:41
+% Last Modified by GUIDE v2.5 22-Aug-2016 17:59:21
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -68,10 +68,8 @@ for fn = fieldnames(config_file)'
    handles.(fn{1}) = config_file.(fn{1});
 end
 
-if handles.load_binary_mask
-    load('src/files/mask.mat');
-    handles.origmask = (~mask).*drawnMask;
-end
+load('src/files/mask.mat');
+handles.origmask = (~mask).*drawnMask;
 
 set(groot,'DefaultFigureColormap',gray)
 
@@ -616,3 +614,16 @@ decon_checkbox_Callback(hObject, eventdata, handles);
 
 fprintf('done! \n')
 guidata(hObject, handles);
+
+
+function cm_checkbox_Callback(hObject, eventdata, handles)
+handles.do_CM = get(handles.cm_checkbox, 'Value');
+handles = refresh_hologram(hObject, eventdata, handles);
+guidata(hObject, handles);
+
+
+function load_mask_checkbox_Callback(hObject, eventdata, handles)
+handles.load_mask = get(handles.load_mask_checkbox, 'Value');
+handles = refresh_hologram(hObject, eventdata, handles);
+guidata(hObject, handles);
+

@@ -14,6 +14,18 @@ switch handles.currentFile(end-2:end)
     case 'mat'
         load(fullfile(handles.pathname,handles.currentFile));
         handles.hologram.orig = data.hologram;
+        if strcmp(handles.currentFile(1:5), 'frame')
+            handles.hologram.orig = fliplr(rot90(handles.hologram.orig));
+            
+            handles.hologram.orig(229, 1:513) = 0;
+            handles.hologram.orig(230, 1:513) = 0;
+            handles.hologram.orig(231, 1:20) = 0;
+            handles.hologram.orig(607, 1:21) = 0;
+            handles.hologram.orig(1:1024, 1:24) = 0;
+            handles.hologram.orig(1:1024, 1000:1024) = 0;
+            figure(4532353);
+            imagesc(log10(abs(handles.hologram.orig)),[0,4])
+        end
 end
 handles.hologram.orig = handles.hologram.orig(1:1024,1:1024);
 fprintf(' done! \n');
@@ -60,15 +72,16 @@ handles.rect(3) = size(handles.hologram.orig,1)-1;
 handles.rect(4) = size(handles.hologram.orig,2)-1;
 
 %% REFRESH PHASE SLIDER AND ARROW KEY LISTENER
+tic
 try %#ok<*TRYNC>
     delete(handles.phaseListener);
 end
 handles.phaseListener = addlistener(handles.phase_slider,'ContinuousValueChange',@(hObject, eventdata) refreshImage(hObject, eventdata, guidata(hObject)));
-% try %#ok<*TRYNC>
-%     delete(handles.arrowKeysListener);
-% end
-% set(handles.reconstructionFigure,'KeyPressFcn',@(hObject, eventdata) arrow_keys_callback(hObject, eventdata, handles));
-
+try %#ok<*TRYNC>
+    delete(handles.arrowKeysListener);
+end
+handles.arrowKeysListener = set(handles.reconstructionFigure,'KeyPressFcn',@(hObject, eventdata) arrow_keys_callback(hObject, eventdata, handles));
+toc
 %% REFRESH PLOT
 handles = refreshImage(hObject, eventdata, handles);
 

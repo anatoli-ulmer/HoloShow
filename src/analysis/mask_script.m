@@ -18,7 +18,7 @@ shift = handles.shift;
 SMOOTH_FACTOR = 15; % smooth parameter for mask
 
 % Switches for what to show
-showMASKS = false; % show used mask
+showMASKS = true; % show used mask
 showCM = false; % show common mode correction
 showSMOOTH = false; % show smoothed mask and pattern
 
@@ -26,15 +26,21 @@ showSMOOTH = false; % show smoothed mask and pattern
 
 origdata = handles.hologram.orig;
 origdata(abs(origdata)>=15000) = 0; % set saturated pixels to 0
-mask = handles.origmask;
+origdata(origdata<-50)=0;
 
-mask(origdata<-50)=0;
+if handles.load_mask
+    mask = handles.origmask;
+else
+    mask = ones(1024);
+end
+
 mask(origdata==0)=0;
 
 if showMASKS
     figure(11) %#ok<*UNRCH>
-    subplot(121); imagesc(handles.origmask);axis square;
-    subplot(122); imagesc(mask);axis square;
+    subplot(131); imagesc(handles.origmask);axis square;
+    subplot(132); imagesc(mask);axis square;
+    subplot(133); imagesc(origdata);axis square;
 end
 
 %% CENTER PICTURE & COMMON MODE

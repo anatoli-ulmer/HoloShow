@@ -11,7 +11,7 @@ end
 
 config_file.lambda = 1.053e-9;
 config_file.detDistance = 0.735;
-config_file.load_binary_mask = true;
+config_file.load_mask = false;
 config_file.do_CM = false;
 config_file.minScale = -2;
 config_file.maxScale = 2;
