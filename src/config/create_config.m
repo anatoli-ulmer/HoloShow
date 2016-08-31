@@ -28,5 +28,6 @@ config_file.LPfiltering = false;
 config_file.HPfrequency = 60;
 config_file.LPfrequency = 332;
 config_file.clusterradius = 37;
+config_file.gpu = true;
 
 save(fullfile(pathstr, filename), 'config_file');

@@ -22,7 +22,7 @@ function varargout = holoShowV3(varargin)
 
 % Edit the above text to modify the response to help holoShowV3
 
-% Last Modified by GUIDE v2.5 31-Aug-2016 13:49:29
+% Last Modified by GUIDE v2.5 31-Aug-2016 12:08:16
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -69,9 +69,14 @@ for fn = fieldnames(config_file)'
 end
 
 set(handles.wavelength_edit, 'String', num2str(handles.lambda*1e9));
-set(handles.detDist_edit, 'String', num2str(handles.detDistance));
 load('src/files/mask.mat');
 handles.origmask = (~mask).*drawnMask;
+
+
+    case 'return'
+        handles.fileIndex = get(handles.filenames_listbox, 'Value');
+        handles = select_hologram(hObject, eventdata, handles);
+        guidata(hObject, handles);
 
 set(groot,'DefaultFigureColormap',gray)
 
@@ -101,11 +106,7 @@ guidata(hObject, handles);
 
 
 function filenames_listbox_Callback(hObject, eventdata, handles)
-if strcmp(get(handles.holoShowV3,'SelectionType'),'open')
-    handles.fileIndex = get(handles.filenames_listbox, 'Value'); % get index of selection
-    handles = select_hologram(hObject, eventdata, handles); % GRAB HOLOGRAM
-    guidata(hObject, handles);
-end
+
 
 function filenames_listbox_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
@@ -634,17 +635,6 @@ handles = refresh_hologram(hObject, eventdata, handles);
 guidata(hObject, handles);
 
 
-function holoShowV3_KeyPressFcn(hObject, eventdata, handles)
-handles = arrow_keys_callback(hObject, eventdata, handles);
-figure(hObject);
-guidata(hObject, handles);
-
-
-function filenames_listbox_KeyPressFcn(hObject, eventdata, handles)
-handles = arrow_keys_callback(hObject, eventdata, handles);
-figure(handles.holoShowV3);
-guidata(hObject, handles);
-
 function wavelength_edit_Callback(hObject, eventdata, handles)
 handles.lambda = str2double(get(handles.wavelength_edit, 'String'))*1e-9;
 handles = refresh_hologram(hObject, eventdata, handles);
@@ -662,19 +652,25 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-function detDist_edit_Callback(hObject, eventdata, handles)
-handles.detDistance = str2double(get(handles.detDist_edit, 'String'));
-handles = refresh_hologram(hObject, eventdata, handles);
-guidata(hObject, handles);
 
-% --- Executes during object creation, after setting all properties.
-function detDist_edit_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to detDist_edit (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
+function holoShowV3_KeyPressFcn(hObject, eventdata, handles)
+switch eventdata.Key
+    case 'leftarrow'
+        handles.fileIndex = handles.fileIndex-1;
+        if handles.fileIndex < 1
+            return
+        end
+        set(handles.filenames_listbox, 'Value', handles.fileIndex)
+        handles = select_hologram(hObject, eventdata, handles);
+        guidata(hObject, handles);
+    case 'rightarrow'
+        handles.fileIndex = handles.fileIndex+1;
+        if handles.fileIndex > size(handles.filenames,2)
+            return
+        end
+        set(handles.filenames_listbox, 'Value', handles.fileIndex);
+        handles = select_hologram(hObject, eventdata, handles);
+        guidata(hObject, handles);
 end
+figure(hObject);
+guidata(hObject, handles);

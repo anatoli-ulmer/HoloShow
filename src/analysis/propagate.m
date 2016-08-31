@@ -2,12 +2,14 @@ function hologram = propagate(hologram, prop_l, lambda, CCD_S_DIST, meth)
 
 % SYNTAX:
 %   hologram = propagate(hologram, prop_l)
-%   hologram = propagate(hologram, prop_l, method)
+%   hologram = propagate(hologram, prop_l, wavelength, CCD_DIST, method)
 %
 % DESCRIPTION:
 %   Propagates the input 'hologram' to the distance 'prop_l'. Default
 %   method is the plane wave propagator. Use optional parameter method =
 %   'fresnel' to use the Fresnel Rayleigh propagator.
+%   This is the version for holoShow v3
+
 if nargin < 5
     if nargin < 4
         if nargin < 3

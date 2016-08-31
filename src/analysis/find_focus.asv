@@ -41,7 +41,8 @@ end
 
 for phase = minPhase:ste:maxPhase
     
-    tempPhase=phase*tempProp;
+    prop_l = round(phase/lambda)*lambda;
+    tempPhase=prop_l*tempProp;
     
     hologram = abs(hologram).*exp(1i*tempPhase);
     recon = ift2(hologram);
@@ -95,18 +96,12 @@ end
 % var = [x; variance']';
 
 while true
-    [~,I] = max(variance);
-    switch x(I)
-        case x(1)
-            x(1) = [];
-            variance(1) = [];
-        case x(end)
-            x(end) = [];
-            variance(end) = [];
-        otherwise
-            break
-    end
-end
+[~,I] = max(variance);
+switch x(I)
+    case x(1)
+        x(1) = [];
+        variance(1) = [];
+    case x(end)
 
 
 focus = x(I);

@@ -1,6 +1,7 @@
 function handles_return = refreshImage(hObject, eventdata, handles)
 
 handles.phase = get(handles.phase_slider, 'Value');
+set(handles.phase_edit, 'String', num2str(round(handles.phase)));
 
 if get(handles.decon_checkbox,'value')
     handles.recon = ift2(handles.hologram.deconvoluted);
