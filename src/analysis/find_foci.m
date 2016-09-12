@@ -26,12 +26,12 @@ i=1;
 
 firstS = true(Nfoci);
 x = minPhase:ste:maxPhase;
-variance = zeros(length(x),Nfoci);
+metric = zeros(length(x),Nfoci);
 
 if gpuSwitch
     hologram = gpuArray(hologram);
     tempProp = gpuArray(tempProp);
-    variance = gpuArray(variance);
+    metric = gpuArray(metric);
 end
 
 for phase = minPhase:ste:maxPhase
@@ -46,7 +46,9 @@ for phase = minPhase:ste:maxPhase
         centerx = round(centroids(CC,2));
         centery = round(centroids(CC,1));
         reconcut = abs(recon(max(1,centerx-Npixel-1):min(1024,centerx+Npixel),max(1,centery-Npixel-1):min(1024,centery+Npixel)));
-        variance(i,CC) = var(reconcut(:));
+ 
+        %%%%% VARICANCE AUTOFOCUS %%%%%
+        metric(i,CC) = var(reconcut(:));
         
         if showHOLO
             if firstS(CC)
@@ -73,7 +75,7 @@ nbrPixels=zeros(1,Nfoci);
 I=gpuArray(zeros(1,Nfoci));
 
 for CC=1:Nfoci
-    [~,I(CC)] = max(variance(:,CC));
+    [~,I(CC)] = max(metric(:,CC));
     foci(CC) = x(I(CC)); %#ok<AGROW>
     N=round(x(I(CC))/lambda);
     prop_l=N*lambda;

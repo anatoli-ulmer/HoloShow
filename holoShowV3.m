@@ -22,7 +22,7 @@ function varargout = holoShowV3(varargin)
 
 % Edit the above text to modify the response to help holoShowV3
 
-% Last Modified by GUIDE v2.5 31-Aug-2016 13:49:29
+% Last Modified by GUIDE v2.5 12-Sep-2016 16:16:25
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -62,6 +62,7 @@ handles.square = get(handles.square_checkbox, 'Value');
 handles.logSwitch = get(handles.log_checkbox, 'Value');
 handles.partSwitch = get(get(handles.part_buttongroup, 'SelectedObject'), 'String');
 handles.image_correction = true;
+handles.af_method = 'variance';
 
 load('config_holoShow.mat'); % To change standard values use 'src/config/create_config.m' to change config file
 for fn = fieldnames(config_file)'
@@ -266,7 +267,7 @@ guidata(hObject, handles);
 
 function find_phase_pushbutton_Callback(hObject, eventdata, handles)
 maxPhase = get(handles.phase_slider, 'Max');
-handles.phase = find_focus(handles.hologram.masked, handles.lambda, handles.detDistance, handles.rect, -maxPhase, maxPhase, 100, true, handles.gpu, get(handles.makeGIF_checkbox,'value'));
+handles.phase = find_focus(handles.hologram.masked, handles.lambda, handles.detDistance, handles.rect, -maxPhase, maxPhase, 100, handles.af_method, true, handles.gpu, get(handles.makeGIF_checkbox,'value'));
 set(handles.phase_slider, 'Value', handles.phase);
 set(handles.phase_edit, 'String', num2str(round(handles.phase)));
 handles = refreshImage(hObject, eventdata, handles);
@@ -667,13 +668,30 @@ handles.detDistance = str2double(get(handles.detDist_edit, 'String'));
 handles = refresh_hologram(hObject, eventdata, handles);
 guidata(hObject, handles);
 
-% --- Executes during object creation, after setting all properties.
+
 function detDist_edit_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to detDist_edit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
 % Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+function autofocus_popupmenu_Callback(hObject, eventdata, handles)
+content = cellstr(get(handles.autofocus_popupmenu, 'String'));
+handles.af_method = content{get(handles.autofocus_popupmenu, 'Value')};
+guidata(hObject, handles);
+
+function autofocus_popupmenu_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to autofocus_popupmenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
 %       See ISPC and COMPUTER.
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
