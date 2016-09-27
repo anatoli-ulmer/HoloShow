@@ -8,5 +8,5 @@ switch str
     case 'gray'
         colormap gray;
     case 'hsv'
-        colormap hsv;
+        colormap morgenstemning;
 end

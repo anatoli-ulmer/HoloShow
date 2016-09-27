@@ -48,7 +48,7 @@ if ~ishandle(handles.hologramFigure)
     handles.hologramFigure = figure('Name','hologram');
 end
 figure(handles.hologramFigure);
-imagesc(log10(abs(handles.hologram.masked)),[1, 4.2]); axis square; colormap fire; colorbar;
+imagesc(log10(abs(handles.hologram.masked)),[1, 4.2]); axis square; colormap morgenstemning; colorbar;
 
 %% CREATE RECONSTRUCTION FIGURE AND PLOT
 if ~ishandle(handles.reconstructionFigure)

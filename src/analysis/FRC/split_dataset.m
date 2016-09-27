@@ -31,7 +31,7 @@ imageB=zeros(Npixel);
 for i=1:Npixel(1)
     for j=1:Npixel(2)
         superpixel=superpixelmatrix(i,j);
-        [imageA(i,j), imageB(i,j)]=divide_superpixel(superpixel);
+        [imageA(i,j), imageB(i,j)] = divide_superpixel(superpixel);
     end
 end
 

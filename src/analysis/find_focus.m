@@ -46,7 +46,8 @@ if gpuSwitch
         warning('Error in GPU allocation')
     end
 end
-
+af_method
+tic
 for phase = minPhase:ste:maxPhase
     
     tempPhase=phase*tempProp;
@@ -103,7 +104,8 @@ for phase = minPhase:ste:maxPhase
             end
             
             focusFigure = figure(3);
-            focusFigure.Units = 'normalized';
+            clf(focusFigure)
+%             focusFigure.Units = 'normalized';
 %             set(focusFigure,'Name','find focus','Position', [0.1,0.3,0.5,0.2]);
             subplot(131); pl1 = imagesc(real(reconcut)); axis square; colormap gray; hold on; set(gca,'xtick',[]); set(gca,'ytick',[])
             subplot(1,3,[2,3]); pl2 = plot(x(1:length(x)), metric(1:length(x))); grid on;
@@ -127,7 +129,7 @@ for phase = minPhase:ste:maxPhase
     end
     i=i+1;
 end
-
+toc
 if strcmp(af_method, 'all')
     figure(33);
     plot(x, metric/max(metric), x, metric2/max(metric2), x, metric3/max(metric3), x, metric4/max(metric4));

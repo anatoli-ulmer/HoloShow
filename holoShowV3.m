@@ -366,27 +366,7 @@ guidata(hObject, handles);
 
 
 function noise_pushbutton_Callback(hObject, eventdata, handles)
-figure;
-imagesc(real(handles.recon));
-part_and_scale(handles.recon, handles.logSwitch, handles.partSwitch); colorbar;
-caxis([handles.minScale, handles.maxScale]); set_colormap(handles.colormap); axis square;
-handles.noiseRect = getrect(gca);
-close(gcf);
-handles.noiseRect = round(handles.noiseRect);
-handles.square = get(handles.square_checkbox, 'Value');
-if handles.square
-    handles.noiseRect(3) = max([handles.noiseRect(3),handles.noiseRect(4)]);
-    handles.noiseRect(4) = max([handles.noiseRect(3),handles.noiseRect(4)]);
-end
-noise = handles.recon(handles.noiseRect(2):handles.noiseRect(2)+handles.noiseRect(4),handles.noiseRect(1):handles.noiseRect(1)+handles.noiseRect(3));
-noise = noise/length(noise);
-Fnoise = fftshift(abs(fft2(noise,1024,1024)));
-temp = rscan(Fnoise,'dispflag',false);
-temp = temp(1:511);
-figure(80); plot(1:511,log(temp(1:511))); title('noise');
-
-handles.noiseSpec = temp.^2;
-handles.noiseSpec2D = Fnoise;
+[handles.noiseSpec, handles.noiseSpec2D] = get_noise_spectrum(handles);
 guidata(hObject, handles);
 
 
@@ -394,65 +374,55 @@ function SNR_pushbutton_Callback(hObject, eventdata, handles)
 recon = handles.recon(handles.rect(2):handles.rect(2)+handles.rect(4),handles.rect(1):handles.rect(1)+handles.rect(3));
 Frecon = fftshift(abs(fft2(recon,1024,1024)/length(recon)));
 temp = rscan(Frecon,'dispflag',false);
-temp = temp(1:511).^2;
-SNR = (temp(1:511)./handles.noiseSpec(1:511));
-x=1:511;
-% figure(80); plot(1:511,log(temp(1:511)),1:511,log(handles.noiseSpec(1:511))); legend('signal','noise'); grid on;
-figure(81); semilogy(x,SNR,1:511,ones(1,511)*1,x,ones(1,511)*3); hold on;
-legend('SNR', 'SNR=1', 'SNR=3')
+x = 1:511;
+Q = handles.lambda*handles.detDistance/75e-6/2*1e9;
+temp = temp(x).^2;
+[handles.noiseSpec, handles.noiseSpec2D] = get_noise_spectrum(handles);
+SNR = (temp(x)./handles.noiseSpec(x));
+% figure(80); plot(x,log(temp(x)),x,log(handles.noiseSpec(x))); legend('signal','noise'); grid on;
+figure(81); subplot (211); semilogy(x, SNR, x, ones(1,511)*1, x, ones(1,511)*5); hold on;
+legend('SNR', 'SNR=1', 'SNR=5')
 xlim([0 511]); grid on;
 ax=gca;
 ax.XTick=0:50:500;
-ax.XTickLabel=round((1.053e-9*0.735/75e-6/2*1e9)./(0:50:500));
+ax.XTickLabel=round(Q./(0:50:500));
 xlabel('resolution in nm')
 
 minFreq=20;
 try
-    diff=SNR(1+minFreq:end)-ones(1,511-minFreq);
-    idx = find(diff < eps, 1)+minFreq;
-    px1 = x(idx);
-    py1 = SNR(idx);
-    diff=SNR(1+minFreq:end)-ones(1,511-minFreq)*3;
+    diff=SNR(1+minFreq:end)-ones(1,511-minFreq)*5;
     idx = find(diff < eps, 1)+minFreq;
     px3 = x(idx);
     py3 = SNR(idx);
-    plot(px1, py1, 'ro', px3, py3, 'ro', 'MarkerSize', 10);
-    title(sprintf('SNR -- \\delta_{SNR1} = %1.fnm, \\delta_{SNR3} = %1.fnm', (1.053e-9*0.735/75e-6/2*1e9)/px1,(1.053e-9*0.735/75e-6/2*1e9)/px3));
+    plot(px3, py3, 'ro', 'MarkerSize', 10);
+    title(sprintf('SNR = 5 at ~ %1.fnm', Q/px3));
 end
 hold off;
 
 handles.SNR2D=(Frecon./handles.noiseSpec2D).^2;
 
-% temp = rscan(Frecon./handles.noiseSpec2D,'dispflag',false);
-% handles.SNR2D=zeros(1024);
-% for i=-512:511
-%     for j=-512:511
-%         if i^2+j^2==0 || round(sqrt(i^2+j^2))>511
-%             handles.SNR2D(i+513,j+513)=0;
-%         else
-%             handles.SNR2D(i+513,j+513)=temp(round(sqrt(i^2+j^2)));
-%         end
-%     end
-% end
-
-% figure(82);
-% maxInt=max(max(log10((Frecon./handles.noiseSpec2D).^2)));
-% subplot(121); imagesc(log10((Frecon./handles.noiseSpec2D).^2),[0, maxInt]); axis square; colorbar;
-% subplot(122); imagesc(log10((Frecon./handles.noiseSpec2D).^2)>0); axis square; colorbar;
-
-[FRCout, twoSigma, halfBit] = FRC(recon(1:2*(floor(end/2)),1:2*(floor(end/2))),'realspace',true,'superpixelsize',2,'ringwidth',2);
-figure(83);
-plot(FRCout); hold on;
-plot(twoSigma);
-plot(halfBit);
-plot(0.5*ones(1,length(halfBit)));
-hold off;
+superpixelsize = 2;
+[FRCout, twoSigma, halfBit] = FRC(recon(1:2*(floor(end/2)),1:2*(floor(end/2))),'realspace',true,'superpixelsize',superpixelsize,'ringwidth',2);
+x = 1:length(FRCout);
+subplot (212); plot(x, FRCout, x, twoSigma, x, halfBit, x, 0.5*ones(1,length(halfBit)));
 grid on;
 ax=gca;
-xxx=ax.XTick;
-ax.XTickLabel=round((1.053e-9*0.735/75e-6/2*1e9)./(xxx/max(xxx(:))*511));
+xticks=ax.XTick;
+ax.XTickLabel=round(Q*superpixelsize./(xticks/max(xticks(:))*511));
 title('Fourier Ring Correlation');
 legend('FRC', '2\sigma criterion', '1/2 bit criterion', '0.5 criterion')
+try
+    minFreq=3; hold on;
+    diff=FRCout(1+minFreq:end)-ones(1,length(FRCout)-minFreq)*0.5;
+    idx = find(diff < eps, 1)+minFreq-1;
+    px3 = x(idx);
+    py3 = FRCout(idx);
+    plot(px3, py3, 'ro', 'MarkerSize', 10);
+    title(sprintf('FRC resolution ~ %1.fnm', Q*superpixelsize/(px3/max(xticks(:))*511)));
+    xlabel('resolution in nm')
+    ylim([0, 1.05])
+end
+hold off;
 
 handles.FRC.data = FRCout;
 handles.FRC.twoSigma = twoSigma;
@@ -498,6 +468,13 @@ end
 fileID=fopen(fullfile(anapath,[foldername,'.txt']),'a');
 fprintf(fileID,'%s\n',shotname);
 fclose(fileID);
+
+picpath = 'E:\LCLS\data\+mimi\pics';
+print(figure(1), fullfile(picpath, [shotname(1:end-4), '_scatt.png']), '-dpng');
+print(figure(2), fullfile(picpath, [shotname(1:end-4), '_recon.png']), '-dpng');
+print(figure(81), fullfile(picpath, [shotname(1:end-4), '_resolution.png']), '-dpng');
+print(figure(23446), fullfile(picpath, [shotname(1:end-4), '_decon.png']), '-dpng');
+
 
 
 
@@ -570,11 +547,12 @@ if ~isfield(handles,'reconSpec')
 end
 
 handles.wiener=90^2;
+% handles.wiener=1e5;
 
 if get(handles.decon_checkbox,'value')
     handles.hologram.deconvoluted = cluster_deconvolution(handles.hologram.propagated, handles.mask,...
         handles.clusterradius, handles.reconSpec, handles.wiener, handles.lambda);
-    handles.recon = - ift2(handles.hologram.deconvoluted);
+    handles.recon = ift2(handles.hologram.deconvoluted);
 else
     handles.recon = ift2(handles.hologram.propagated);
 end

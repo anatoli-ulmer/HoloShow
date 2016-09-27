@@ -20,9 +20,9 @@ for i=1:length(R)
     rad = R(i)*1e-9;
     G = 3*(sin(q.*rad)-q.*rad.*cos(q.*rad)).*q.^(-3)/rad^2;
     Freference = G(round(sqrt(xx.^2+yy.^2)));
-    Freference = Freference/sum(abs(Freference(:)));
+    Freference = Freference/max(abs(Freference(:)));
     Freference = Freference.*handles.mask;
-    Freference = Freference*sum(abs(handles.hologram.propagated(:)))/2;
+    Freference = Freference*max(abs(handles.hologram.propagated(:)))/2;
     
     
     deconvolved=handles.hologram.propagated.*conj(Freference);
@@ -38,24 +38,18 @@ for i=1:length(R)
     holoI.CData = reconcut; 
     title(num2str(R(i))); drawnow;
     
-%     FRC_cutoff(i) = sum(sum(var(abs(reconcut)).^2));
-
-    tmp = del2(abs(reconcut)).^2;
-    figure(2222); imagesc((reconcut)); axis square; colorbar; colormap gray;
-    FRC_cutoff(i) = sum(sum(del2(abs(reconcut)).^2))/R(i)^2;
-
+%     FRC_cutoff(i) = sum(sum(del2(abs(reconcut)).^2));
 % 
-%     [FX,FY] = gradient(abs(reconcut));
-%     tmp = sqrt(FX.^2 + FY.^2);
-%     figure(2222); imagesc(tmp); axis square; colorbar; colormap fire;
-%     FRC_cutoff(i) = var(tmp(:));
+    [FX,FY] = gradient(abs(reconcut));
+    tmp = sqrt(FX.^2 + FY.^2);
+    FRC_cutoff(i) = var(tm
 %     FRC_cutoff(i) = sum(sum(sqrt(FX.^2 + FY.^2)));
-
+% 
 %     ma = mean(abs(reconcut(:)));
 %     FRC_cutoff(i) = var(abs(reconcut(:))-ma);
 %     
 %     SPEC = abs(ft2(abs(reconcut))).^2;
-%     FRC_cutoff(i) = sum(sum(log10(1 + SPEC)))/R(i)^2;
+%     FRC_cutoff(i) = sum(sum(log10(1 + SPEC)));
 %     temp = FRC(holocut(1:2*(floor(end/2)),1:2*(floor(end/2))),'realspace',true,'superpixelsize',2,'ringwidth',2);
 %     try
 %         FRC_cutoff(i) = find(temp(6:end)<0.5,1);

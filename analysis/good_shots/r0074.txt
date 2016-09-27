@@ -1,0 +1,6 @@
+r0074_hit_1940.dat
+r0074_hit_2247.dat
+r0074_hit_2505.dat
+r0074_hit_2593.dat
+r0074_hit_3392.dat
+r0074_hit_4371.dat

@@ -15,7 +15,7 @@ rowsToshift = round(handles.ycenter);
 columnsToShift =  round(handles.xcenter);
 slit = handles.slit;
 shift = handles.shift;
-SMOOTH_FACTOR = 15; % smooth parameter for mask
+SMOOTH_FACTOR = 5; % smooth parameter for mask
 
 % Switches for what to show
 showMASKS = false; % show used mask
@@ -118,7 +118,7 @@ if showSMOOTH
     subplot(122); imagesc(log(abs(newMask)),[0 8]); axis square; colormap fire; colorbar;
 end
 
-handles.mask =newMask;
+handles.mask = newMask;
 handles.hardmask = mask;
 handles.hologram.masked = data.*newMask;
 
