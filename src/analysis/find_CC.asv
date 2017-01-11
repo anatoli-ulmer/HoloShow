@@ -2,7 +2,7 @@
 function centroids = find_CC(recon, varargin)
 
 show_img = true;
-min_dist = 100;
+min_dist = 0;
 int_thresh = 5;
 r_ignored = 100;
 r_dilate = 15;
@@ -71,16 +71,12 @@ end
 
 %% Step 5: Remove Connected Objects on Border
 
-BWnobord = BWdfill;
-% BWnobord = imclearborder(BWdfill, 4);
-
+BWnobord = imclearborder(BWdfill, 4);
 % figure, imshow(BWnobord),
 
-% if show_img
-%     subplot(335); imagesc(BWnobord); axis square; title('cleared border image');
-% end
-
-
+if show_img
+    subplot(335); imagesc(BWnobord); axis square; title('cleared border image');
+end
 %% Step 6: Smoothen the Object
 
 seD = strel('disk', r_erode);
@@ -145,15 +141,11 @@ if size(centroids,1)==0
 end
 
 n=1;
-while true
-    if n>size(centroids,1)
-        break
-    end
-    if sum(abs(centroids(n,:) - [513, 513]).^2) < (1.5*min_dist)^2;
+while n<=size(centroids,1)
+    ctmp = (centroids - (repmat([513, 513], size(centroids,1) ,1)))
+    dist = ctmp(:,1).^2 + ctmp(:,2).^2 < (2*min_dist)^2
         centroids(n,:) = [];
-    else
-        n=n+1;
-    end
+    n=n+1;
 end
 
 n=1;
@@ -161,25 +153,10 @@ while n<=size(centroids,1)
     ctmp = (centroids - (repmat(centroids(n,:), size(centroids,1) ,1)));
     dist = ctmp(:,1).^2 + ctmp(:,2).^2 < min_dist^2;
     if sum(dist)>1
-        k = find(dist);
-        centroids(n,:) = mean(centroids(k,:));
-        for j=2:sum(dist) 
-            centroids(k(j),:) = [];
-        end
-    else
-        n=n+1;
+        centroids(n,:) = [];
     end
+    n=n+1;
 end
-
-% while n<=size(centroids,1)
-%     ctmp = (centroids - (repmat(centroids(n,:), size(centroids,1) ,1)));
-%     dist = ctmp(:,1).^2 + ctmp(:,2).^2 < min_dist^2;
-%     if sum(dist)>1
-%         centroids(n,:) = [];
-%     else
-%         n=n+1;
-%     end
-% end
 
 if show_img
     figure(41)

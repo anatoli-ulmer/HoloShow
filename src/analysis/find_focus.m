@@ -46,7 +46,7 @@ if gpuSwitch
         warning('Error in GPU allocation')
     end
 end
-af_method
+
 tic
 for phase = minPhase:ste:maxPhase
     

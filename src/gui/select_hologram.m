@@ -16,7 +16,7 @@ switch handles.currentFile(end-2:end)
     case 'mat'
         load(fullfile(handles.pathname,handles.currentFile));
         handles.hologram.orig = data.hologram;
-        if strcmp(handles.currentFile(1:5), 'frame')
+        if strcmp(handles.currentFile(7:11), 'frame')
             handles.hologram.orig = fliplr(rot90(handles.hologram.orig));
             % HARD CODED MASKING
             handles.hologram.orig(229, 1:513) = 0;
@@ -25,9 +25,14 @@ switch handles.currentFile(end-2:end)
             handles.hologram.orig(607, 1:21) = 0;
             handles.hologram.orig(1:1024, 1:24) = 0;
             handles.hologram.orig(1:1024, 1000:1024) = 0;
+            handles.hologram.orig(385:511,513:end) = handles.hologram.orig(385:511,513:end)*2;
+            handles.hologram.orig = handles.hologram.orig(1:1024,1:1024);
+            handles.hologram.orig(512:end,510:end) = simpleshift(handles.hologram.orig(512:end,510:end) , [0,12]);
+            handles.hologram.orig(1:511,513:end) = simpleshift(handles.hologram.orig(1:511,513:end) , [0,12]);
+            handles.hologram.orig(512:end,:) = simpleshift(handles.hologram.orig(512:end,:) , [13,-1]);
         end
 end
-handles.hologram.orig = handles.hologram.orig(1:1024,1:1024);
+
 fprintf(' done! \n');
 
 %% APPLY IMAGE CORRECTION
@@ -48,7 +53,7 @@ if ~ishandle(handles.hologramFigure)
     handles.hologramFigure = figure('Name','hologram');
 end
 figure(handles.hologramFigure);
-imagesc(log10(abs(handles.hologram.masked)),[1, 4.2]); axis square; colormap morgenstemning; colorbar;
+imagesc(log10(abs(handles.hologram.masked)),[0, 4.2]); axis square; colormap morgenstemning; colorbar;
 
 %% CREATE RECONSTRUCTION FIGURE AND PLOT
 if ~ishandle(handles.reconstructionFigure)

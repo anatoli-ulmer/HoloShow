@@ -186,7 +186,7 @@ cmap = abs(interp1((1:last_n),last_cmap,linspace(1,last_n,n)));
 if config.invert
     cmap = flipud(cmap);
 end
-
+% config.minColor = 'darkgray';
 if ischar(config.minColor)
     if ~strcmp(config.minColor,'none')
         switch config.minColor
