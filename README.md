@@ -7,10 +7,9 @@ email: anatoli.ulmer@gmail.com
 NOT READY TO USE. NOT ALL FUNCTIONS NEEDED INCLUDED YET.
 
 Tested for Matlab R2015a with following toolboxes:
-1. communication_toolbox,
-2. image_toolbox,
-3. matlab,
-4. signal_toolbox
+
+1. Image Processing Toolbox
+2. Parallel Computing Toolbox
 
 Decreasing amount of needed toolboxes is in progress.
 
