@@ -64,13 +64,23 @@ handles.partSwitch = get(get(handles.part_buttongroup, 'SelectedObject'), 'Strin
 handles.image_correction = true;
 handles.af_method = 'variance';
 
-load('config_holoShow.mat'); % To change standard values use 'src/config/create_config.m' to change config file
+load('config_holoShow_LCLS2016.mat'); % To change standard values use 'src/config/create_config.m' to change config file
 for fn = fieldnames(config_file)'
    handles.(fn{1}) = config_file.(fn{1});
 end
 
 set(handles.wavelength_edit, 'String', num2str(handles.lambda*1e9));
 set(handles.detDist_edit, 'String', num2str(handles.detDistance));
+set(handles.load_mask_checkbox, 'Value', handles.load_mask);
+set(handles.cm_checkbox, 'Value', handles.do_CM);
+set(handles.min_edit, 'String', num2str(handles.minScale));
+set(handles.max_edit, 'String', num2str(handles.maxScale));
+set(handles.highpass_checkbox, 'Value', handles.HPfiltering);
+set(handles.lowpass_checkbox, 'Value', handles.LPfiltering);
+set(handles.highpass_edit, 'String', num2str(handles.HPfrequency));
+set(handles.lowpass_edit, 'String', num2str(handles.LPfrequency));
+set(handles.clusterradius_edit, 'String', num2str(handles.clusterradius));
+
 load('src/files/mask.mat');
 handles.origmask = (~mask).*drawnMask;
 

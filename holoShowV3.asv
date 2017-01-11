@@ -16,13 +16,13 @@ function varargout = holoShowV3(varargin)
 %      stop.  All inputs are passed to holoShowV3_OpeningFcn via varargin.
 %
 %      *See GUI Options on GUIDE's Tools menu.  Choose "GUI allows only one
-%      instance to run (singleton)".
+%      instance to run (singleton)".    
 %
 % See also: GUIDE, GUIDATA, GUIHANDLES
 
 % Edit the above text to modify the response to help holoShowV3
 
-% Last Modified by GUIDE v2.5 12-Sep-2016 16:16:25
+% Last Modified by GUIDE v2.5 11-Jan-2017 11:26:34
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -64,13 +64,16 @@ handles.partSwitch = get(get(handles.part_buttongroup, 'SelectedObject'), 'Strin
 handles.image_correction = true;
 handles.af_method = 'variance';
 
-load('config_holoShow.mat'); % To change standard values use 'src/config/create_config.m' to change config file
+load('config_holoShow_LCLS2016.mat'); % To change standard values use 'src/config/create_config.m' to change config file
 for fn = fieldnames(config_file)'
    handles.(fn{1}) = config_file.(fn{1});
 end
 
 set(handles.wavelength_edit, 'String', num2str(handles.lambda*1e9));
 set(handles.detDist_edit, 'String', num2str(handles.detDistance));
+set(handles.load_mask_checkbox, handles.load_mask_checkbox);
+set(handles.load_mask_checkbox, handles.load_mask);
+
 load('src/files/mask.mat');
 handles.origmask = (~mask).*drawnMask;
 
@@ -209,12 +212,30 @@ guidata(hObject, handles);
 
 
 function next_pushbutton_Callback(hObject, eventdata, handles)
-handles.fileIndex = handles.fileIndex+1;
-if handles.fileIndex > size(handles.filenames,2)
-    return
-end
-set(handles.filenames_listbox, 'Value', handles.fileIndex);
-handles = select_hologram(hObject, eventdata, handles);
+% while true
+    handles.fileIndex = handles.fileIndex+1;
+    if handles.fileIndex > size(handles.filenames,2)
+        return
+    end
+
+    set(handles.filenames_listbox, 'Value', handles.fileIndex);
+    handles = select_hologram(hObject, eventdata, handles);
+
+    %%%%%%%%%%%%%%% TEMPORAL! REMOVE THIS IF YOU FIND IT!!! %%%%%%%%%%%%%%%%%%%
+
+%     polmat = polar_matrix(image_bin(handles.hologram.orig.*handles.hardmask,2));
+%     figure(343);
+%     subplot(211); imagesc(log10(abs(polmat(:,15:128))), [0, 4.2]); colormap morgenstemning
+%     angularsum = sum(abs(polmat(:,15:128)'));
+%     angularsum(140:210) = [];
+%     angularsum(45:80) = [];
+%     asymmetryVal = 1e-8*var(angularsum);
+%     subplot(212); plot(angularsum); title(num2str(asymmetryVal))
+%     if asymmetryVal > 0.5
+%         break
+%     end
+%     'bounce'
+% end
 guidata(hObject, handles);
 
 
@@ -286,7 +307,7 @@ guidata(hObject, handles);
 
 
 function findCC_pushbutton_Callback(hObject, eventdata, handles)
-handles.centroids = find_CC(handles.recon);
+handles.centroids = find_CC(handles.recon, 'show_img', true, 'min_dist', 0, 'int_thresh', 5, 'r_ignored', 100);
 if isequal(handles.centroids,[0,0])
     msgbox('no cross correlations found!')
 end
@@ -308,46 +329,17 @@ guidata(hObject, handles);
 
 
 function wholeRun_pushbutton_Callback(hObject, eventdata, handles)
-
-handles.runfolders = uipickfiles;% pick run folders
-
-
-for run=1:length(handles.runfolders)
-    try
-        handles.pathname = handles.runfolders{run};
-        filelist = ls(handles.pathname);
-        handles.filenames=[];
-        for i=3:size(filelist,1)
-            handles.filenames{i}=strrep(filelist(i,:),' ','');
-        end
-        
-        set(handles.filenames_listbox, 'String', handles.filenames);
-    catch
-        continue
+while true
+    handles.fileIndex = handles.fileIndex+1;
+    if handles.fileIndex > size(handles.filenames,2)
+        return
     end
-    
-    for i = 1:size(handles.filenames,2)
-        try
-            handles.fileIndex = i;
-            set(handles.filenames_listbox, 'Value', handles.fileIndex);
-            try
-                handles = select_hologram(hObject, eventdata, handles);
-            catch
-                continue
-            end
-            handles.centroids = find_CC(handles.recon);
-            if size(handles.centroids,1)==1
-                continue
-            end
-            maxPhase = get(handles.phase_slider, 'Max');
-            find_foci(handles.hologram.masked, handles.centroids, -maxPhase, maxPhase, 200, handles.pathname, handles.currentFile, true, false);            
-        catch
-            fprintf('failed on %s !!!\n', handles.currentFile);
-        end
-    end
+
+    set(handles.filenames_listbox, 'Value', handles.fileIndex);
+    handles = select_hologram(hObject, eventdata, handles);
+    handles.centroids = find_CC(handles.recon, 'show_img', true, 'min_dist', 0, 'int_thresh', 5, 'r_ignored', 100);
 end
-guidata(hObject, handles);
-
+    
 
 function center_pushbutton_Callback(hObject, eventdata, handles)
 [columnsToShift, rowsToshift, handles.phaseOffset] = find_center(handles.hologram.masked, handles.phase, handles.rect);
@@ -546,8 +538,8 @@ if ~isfield(handles,'reconSpec')
     handles.reconSpec=1;
 end
 
-% handles.wiener=90^2;
 handles.wiener=90^2;
+% handles.wiener=1e5;
 
 if get(handles.decon_checkbox,'value')
     handles.hologram.deconvoluted = cluster_deconvolution(handles.hologram.propagated, handles.mask,...
@@ -674,3 +666,66 @@ function autofocus_popupmenu_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+function save_handles_pushbutton_Callback(hObject, eventdata, handles)
+shotlist=get(handles.filenames_listbox, 'String');
+shotname=char(shotlist(get(handles.filenames_listbox, 'Value'))) %#ok<NOPRT>
+% foldername=shotname(1:5);
+% anapath = fullfile(handles.sourcepath, 'analysis','good_shots');
+% if ~exist(anapath, 'dir')
+%     mkdir(anapath)
+% end
+% fileID=fopen(fullfile(anapath,[foldername,'.txt']),'a');
+% fprintf(fileID,'%s\n',shotname);
+% fclose(fileID);
+
+anapath = fullfile(handles.sourcepath, 'analysis','interesting');
+if ~exist(anapath, 'dir')
+    mkdir(anapath)
+end
+
+% picpath = uigetdir
+% print(figure(1), fullfile(picpath, [shotname(1:end-4), '_scatt.png']), '-dpng');
+[filename, pathname] = uiputfile('*.mat','Save handles as',fullfile(anapath, [shotname(1:end-4), '_handles.mat']));
+save(fullfile(pathname, filename), 'handles');
+
+function choose_runs_pushbutton_Callback(hObject, eventdata, handles)
+handles.runfolders = uipickfiles;% pick run folders
+
+
+for run=1:length(handles.runfolders)
+    try
+        handles.pathname = handles.runfolders{run};
+        filelist = ls(handles.pathname);
+        handles.filenames=[];
+        for i=3:size(filelist,1)
+            handles.filenames{i}=strrep(filelist(i,:),' ','');
+        end
+        
+        set(handles.filenames_listbox, 'String', handles.filenames);
+    catch
+        continue
+    end
+    
+    for i = 1:size(handles.filenames,2)
+        try
+            handles.fileIndex = i;
+            set(handles.filenames_listbox, 'Value', handles.fileIndex);
+            try
+                handles = select_hologram(hObject, eventdata, handles);
+            catch
+                continue
+            end
+            handles.centroids = find_CC(handles.recon);
+            if size(handles.centroids,1)==1
+                continue
+            end
+            maxPhase = get(handles.phase_slider, 'Max');
+            find_foci(handles.hologram.masked, handles.centroids, -maxPhase, maxPhase, 200, handles.pathname, handles.currentFile, true, false);            
+        catch
+            fprintf('failed on %s !!!\n', handles.currentFile);
+        end
+    end
+end
+guidata(hObject, handles);
