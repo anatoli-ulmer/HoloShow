@@ -1,16 +1,16 @@
 # holoShow
 Your favourite tool for analysing in-flight holography data manually is now available on GitHub! :D
 
-author: Anatoli Ulmer
+author: Anatoli Ulmer,
 email: anatoli.ulmer@gmail.com
 
 NOT READY TO USE. NOT ALL FUNCTIONS NEEDED INCLUDED YET.
 
 Tested for Matlab R2015a with following toolboxes:
-	communication_toolbox
-	image_toolbox
-	matlab
-	signal_toolbox
+1. communication_toolbox,
+2. image_toolbox,
+3. matlab,
+4. signal_toolbox
 
 Decreasing amount of needed toolboxes is in progress.
 
