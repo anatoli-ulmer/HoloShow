@@ -1,5 +1,0 @@
-r0075_hit_1133.dat
-r0075_hit_3418.dat
-r0075_hit_3530.dat
-r0075_hit_4979.dat
-r0075_hit_5134.dat

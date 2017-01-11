@@ -10,10 +10,10 @@ end
 
 %% READ RAW DATA
 fprintf('loading file: %s ...', handles.currentFile);
-switch handles.currentFile(end-2:end)
-    case 'dat'
+switch handles.ext
+    case '.dat'
         handles.hologram.orig = dlmread(fullfile(handles.pathname,handles.currentFile));
-    case 'mat'
+    case '.mat'
         load(fullfile(handles.pathname,handles.currentFile));
         handles.hologram.orig = data.hologram;
         if strcmp(handles.currentFile(7:11), 'frame')
@@ -31,6 +31,8 @@ switch handles.currentFile(end-2:end)
             handles.hologram.orig(1:511,513:end) = simpleshift(handles.hologram.orig(1:511,513:end) , [0,12]);
             handles.hologram.orig(512:end,:) = simpleshift(handles.hologram.orig(512:end,:) , [13,-1]);
         end
+    case '.cxi'
+        handles.hologram.orig = h5read(fullfile(handles.pathname, handles.first_file), handles.cxi_entryname, [1 1 handles.fileIndex],[1024 1024 1]);
 end
 
 fprintf(' done! \n');

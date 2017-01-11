@@ -1,3 +1,0 @@
-r0166_hit_300.dat
-r0166_hit_324.dat
-r0166_hit_916.dat

@@ -55,6 +55,9 @@ function holoShowV3_OpeningFcn(hObject, eventdata, handles, varargin)
 [handles.sourcepath,~,~] = fileparts(mfilename('fullpath'));
 addpath(genpath(handles.sourcepath));
 
+handles.cxi_entryname = '/entry_1/image_1/data';
+handles.cxi_identifier = '/entry_1/experiment_identifier';
+
 handles.output = hObject;
 handles.hologramFigure = figure('Name','hologram');
 handles.reconstructionFigure = figure('Name','reconstruction');
@@ -106,8 +109,23 @@ varargout{1} = handles.output;
 
 function load_pushbutton_Callback(hObject, eventdata, handles)
 set(handles.filenames_listbox, 'Value', 1); % set selection to first entry
-[handles.filenames, handles.pathname] = uigetfile('*.dat;*.mat','select hologram files','E:\LCLS\data','MultiSelect','On'); % get list of files and path
-set(handles.filenames_listbox, 'String', handles.filenames);
+[handles.filenames, handles.pathname] = uigetfile('*.dat;*.mat;*.h5;*.cxi','select hologram files','E:\LCLS\data','MultiSelect','On'); % get list of files and path
+
+if iscell(handles.filenames)
+    handles.first_file = handles.filenames{1};
+else
+    handles.first_file = handles.filenames;
+end
+[~,~,handles.ext] = fileparts(handles.first_file);
+
+if strcmp(handles.ext, '.cxi')
+    entrylist = h5read(fullfile(handles.pathname, handles.first_file), handles.cxi_identifier);
+    set(handles.filenames_listbox, 'String', entrylist);
+    handles.nbr_images = size(entrylist,1);
+else
+    set(handles.filenames_listbox, 'String', handles.filenames);
+    handles.nbr_images = size(handles.filenames,2);
+end
 guidata(hObject, handles);
 
 
@@ -221,7 +239,7 @@ guidata(hObject, handles);
 function next_pushbutton_Callback(hObject, eventdata, handles)
 % while true
     handles.fileIndex = handles.fileIndex+1;
-    if handles.fileIndex > size(handles.filenames,2)
+    if handles.fileIndex > handles.nbr_images
         return
     end
 
@@ -338,7 +356,7 @@ guidata(hObject, handles);
 function wholeRun_pushbutton_Callback(hObject, eventdata, handles)
 while true
     handles.fileIndex = handles.fileIndex+1;
-    if handles.fileIndex > size(handles.filenames,2)
+    if handles.fileIndex > handles.nbr_images
         return
     end
 
@@ -715,7 +733,7 @@ for run=1:length(handles.runfolders)
         continue
     end
     
-    for i = 1:size(handles.filenames,2)
+    for i = 1:handles.nbr_images
         try
             handles.fileIndex = i;
             set(handles.filenames_listbox, 'Value', handles.fileIndex);
