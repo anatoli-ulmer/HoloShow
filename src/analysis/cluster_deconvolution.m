@@ -1,9 +1,9 @@
-function deconvolved = cluster_deconvolution(hologram, mask, clusterradius, reconSpec, wiener, lambda)
+function deconvolved = cluster_deconvolution(hologram, mask, clusterradius, reconSpec, wiener, lambda, det_Dist)
 
 R=clusterradius*1e-9;
 x = 1:800;
 x = x*75e-3;
-theta = atan(x./735);
+theta = atan(x./(det_Dist*1e3));
 q = theta*2*pi/lambda;
 G = 3*(sin(q.*R)-q.*R.*cos(q.*R)).*q.^(-3)/R^2;
 
@@ -25,7 +25,6 @@ Freference = Freference.*mask;
 Freference = Freference/max(abs(Freference(:)));
 Freference = Freference*max(sqrt(abs(hologram(:)))/5);
 
-% wiener = 1/(90);
 deconvolved=hologram.*conj(Freference);
 deconvolved=deconvolved./(abs(Freference).^2+1./sqrt(abs(hologram)));
 

@@ -568,7 +568,7 @@ handles.wiener=90^2;
 
 if get(handles.decon_checkbox,'value')
     handles.hologram.deconvoluted = cluster_deconvolution(handles.hologram.propagated, handles.mask,...
-        handles.clusterradius, handles.reconSpec, handles.wiener, handles.lambda);
+        handles.clusterradius, handles.reconSpec, handles.wiener, handles.lambda, handles.detDistance);
     handles.recon = ift2(handles.hologram.deconvoluted);
 else
     handles.recon = ift2(handles.hologram.propagated);

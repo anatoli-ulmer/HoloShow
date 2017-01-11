@@ -5,8 +5,8 @@ FRC_cutoff=zeros(1,length(R));
 
 x = 1:800;
 x = x*75e-3;
-lambda = 1.0530e-9;
-theta = atan(x./735);
+lambda = handles.lambda;
+theta = atan(x./(handles.detDistance*1e3));
 q = theta*2*pi/lambda;
 [xx,yy] = meshgrid(-512:511,-512:511);
 xx(xx==0)=1;
