@@ -1,5 +1,9 @@
 function clusterradius = find_decon(handles)
 
+%%%%%%%%%%%% TO DO: THIS IS COMPLETELY F****D UP! %%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%% needs to be cleaned. look in cluster_deconvolution.m!" %%%%%%
+
+
 R=10:1:50;
 FRC_cutoff=zeros(1,length(R));
 

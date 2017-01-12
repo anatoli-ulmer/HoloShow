@@ -332,7 +332,7 @@ guidata(hObject, handles);
 
 
 function findCC_pushbutton_Callback(hObject, eventdata, handles)
-handles.centroids = find_CC(handles.recon, 'show_img', true, 'min_dist', 0, 'int_thresh', 5, 'r_ignored', 100);
+handles.centroids = find_CC(handles.recon, 'show_img', true, 'min_dist', 100, 'int_thresh', 5, 'r_ignored', 75);
 if isequal(handles.centroids,[0,0])
     msgbox('no cross correlations found!')
 end
@@ -341,14 +341,14 @@ guidata(hObject, handles);
 
 function focusCC_pushbutton_Callback(hObject, eventdata, handles)
 fprintf('looking for cross correlations...')
-handles.centroids = find_CC(handles.recon);
+handles.centroids = find_CC(handles.recon, 'show_img', true, 'min_dist', 100, 'int_thresh', 5, 'r_ignored', 75);
 fprintf(' done!\n')
 if isequal(handles.centroids,[0,0])
     return
 end
 maxPhase = get(handles.phase_slider, 'Max');
 fprintf('looking for foci...')
-find_foci(handles.hologram.masked, handles.centroids, -maxPhase, maxPhase, 200, handles.pathname, handles.currentFile, true, false);
+handles.foci = find_foci(handles.hologram.masked, handles.lambda, handles.detDistance, -maxPhase, maxPhase, handles.centroids, 30, true, true);
 fprintf(' done!\n')
 guidata(hObject, handles);
 
@@ -362,7 +362,7 @@ while true
 
     set(handles.filenames_listbox, 'Value', handles.fileIndex);
     handles = select_hologram(hObject, eventdata, handles);
-    handles.centroids = find_CC(handles.recon, 'show_img', true, 'min_dist', 0, 'int_thresh', 5, 'r_ignored', 100);
+    handles.centroids = find_CC(handles.recon, 'show_img', true, 'min_dist', 100, 'int_thresh', 5, 'r_ignored', 75);
 end
     
 

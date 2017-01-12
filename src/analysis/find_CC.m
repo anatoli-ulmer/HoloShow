@@ -4,157 +4,88 @@ function centroids = find_CC(recon, varargin)
 show_img = true;
 min_dist = 100;
 int_thresh = 5;
-r_ignored = 100;
+r_ignored = 75;
 r_dilate = 15;
-r_erode = 5;
+r_erode = 10;
+fudge_factor = 1;
 
 if exist('varargin','var')
     L = length(varargin);
     if rem(L,2) ~= 0, error('Parameters/Values must come in pairs.'); end
     for ni = 1:2:L
         switch lower(varargin{ni})
-            case 'show_img', center(2) = varargin{ni+1};
-            case 'min_dist', center(1) = varargin{ni+1};
-            case 'int_thresh', center(2) = varargin{ni+1};
-            case 'r_ignored', center(1) = varargin{ni+1};
-            case 'r_dilate', center(2) = varargin{ni+1};
-            case 'r_erode', center(1) = varargin{ni+1};
+            case 'show_img', show_img = varargin{ni+1};
+            case 'min_dist', min_dist = varargin{ni+1};
+            case 'int_thresh', int_thresh = varargin{ni+1};
+            case 'r_ignored', r_ignored = varargin{ni+1};
+            case 'r_dilate', r_dilate = varargin{ni+1};
+            case 'r_erode', r_erode = varargin{ni+1};
+            case 'fudge_factor', fudge_factor = varargin{ni+1};
         end
     end
 end
-    
-%% Step 1: Read Image
 
-fudgeFactor = 0.5;
-% Iorig = dlmread('testRecon.dat');
-Iorig = abs(recon);
+%% Step 1: Isolate important parts of patterson function
+
+recon_int = abs(recon); % look only at intensity
 [X,Y] = meshgrid(-512:511,-512:511);
-I = Iorig.*(X.^2+Y.^2>r_ignored^2);
-I(I<int_thresh*median(I(:))) = 0;
-% [grad, direction] = imgradient(I);
+img = recon_int.*(X.^2 + Y.^2 > r_ignored^2); % center part (autocorrelation) is ignored
+img(img<int_thresh*median(img(:))) = 0; % minimum intensity threshold
 
-if show_img
-    figure(4);
-    subplot(331); imagesc(I); axis square; colormap fire;
-    title('original image');
+%% Step 2: Sobel Edge detection
+
+if fudge_factor == 1
+    [img_edges, ~] = edge(img, 'sobel'); 
+else
+    [~, threshold] = edge(img, 'sobel'); 
+    img_edges = edge(img,'sobel', threshold * fudge_factor);
 end
-%% Step 2: Detect Entire Cell
 
-[~, threshold] = edge(I, 'sobel');
-% fudgeFactor = 1;
-BWs = edge(I,'sobel', threshold * fudgeFactor);
-
-if show_img
-    subplot(332); imagesc(BWs); axis square; colormap fire; title('binary gradient mask');
-end
-% BWs = I;
 %% Step 3: Dilate the Image
 
-se90 = strel('disk', r_dilate);
-% se0 = strel('disk', r_dilate, 0);
-
-BWsdil = imdilate(BWs, se90);
-
-if show_img
-    subplot(333); imagesc(BWsdil); axis square; title('dilated gradient mask');
-    % figure, imshow(BWsdil), title('dilated gradient mask');
-end
+se_dilate = strel('disk', r_dilate);
+img_dilated = imdilate(img_edges, se_dilate);
 
 %% Step 4: Fill Interior Gaps
 
-BWdfill = imfill(BWsdil, 'holes');
-% figure, imshow(BWdfill);
+img_filled = imfill(img_dilated, 'holes');
+% img_filled = imclearborder(img_filled, 4); % Remove Connected Objects on Border 
 
-if show_img
-    subplot(334); imagesc(BWdfill); axis square; title('binary image with filled holes');
-end
+%% Step 5: Smoothen the Object
 
-%% Step 5: Remove Connected Objects on Border
+se_erode = strel('disk', r_erode);
+img_eroded = imerode(img_filled, se_erode);
 
-BWnobord = BWdfill;
-% BWnobord = imclearborder(BWdfill, 4);
+%% Step 5: Remove small Objects
 
-% figure, imshow(BWnobord),
+img_cleared = bwareaopen(img_eroded, 500); % Remove small Objects
+% BWfinal = BWfinal - bwareaopen(BWfinal, 10000); % Remove big Objects
 
-% if show_img
-%     subplot(335); imagesc(BWnobord); axis square; title('cleared border image');
-% end
+%% Step 6: Find connected areas
 
-
-%% Step 6: Smoothen the Object
-
-seD = strel('disk', r_erode);
-BWfinal = imerode(BWnobord,seD);
-BWfinal = imerode(BWfinal,seD);
-
-if show_img
-    subplot(336); imagesc(BWfinal); axis square; title('segmented image');
-end
-
-%% Step 7: Detect largest Area
-
-% use Area and PixelIdxList in regionprops, this means to edit the to the following line:
-
-% stat = regionprops(BWfinal,'Centroid','Area','PixelIdxList');
-% % The maximum area and it's struct index is given by
-%
-% [maxValue,index] = max([stat.Area]);
-% % The linear index of pixels of each area is given by `stat.PixelIdxList', you can use them to delete that given area (I assume this means to assign zeros to it)
-% BWnew = BWfinal;
-% BWnew(stat(index).PixelIdxList) = 0;
-%
-% BWfinal = BWfinal-BWnew;
-%
-% subplot(337); imagesc(BWfinal); axis square;
-% title('choose largest area');
-
-%% Shrink
-% BWshrink = BWfinal;
-% H = fspecial('gaussian',5,5);
-% BWshrink = imfilter(BWfinal,H,'replicate');
-% BWshrink = double(BWshrink>0.999);
-% 
-% if show_img
-%     subplot(338); imagesc(BWshrink); axis square;
-%     title('shrink area');
-% end
-
-% %% Show
-% BWfinal = BWshrink;
-% BWoutline = bwperim(BWfinal);
-% showH = real(hologram(ROI(1,1):ROI(1,2),ROI(2,1):ROI(2,2)));
-% showH = showH + abs(min(showH(:)));
-% Segout = showH;
-% Segout(BWoutline) = max(showH(:));
-% subplot(339); imagesc(Segout);
-% axis square; colormap fire; title('outlined original image');
-
-%%
-
-BWfinal = bwareaopen(BWfinal, 500);
-% BWfinal = BWfinal - bwareaopen(BWfinal, 10000);
-
-
-
-CC = bwconncomp(BWfinal,8);
-S = regionprops(CC,'Centroid');
+connected_components = bwconncomp(img_cleared, 8);
+S = regionprops(connected_components, 'Centroid');
 centroids = cat(1, S.Centroid);
 if size(centroids,1)==0
     centroids = [0,0];
     return
 end
 
+%% Step 7: Remove CCs near center
+
 n=1;
 while true
     if n>size(centroids,1)
         break
     end
-    if sum(abs(centroids(n,:) - [513, 513]).^2) < (1.5*min_dist)^2;
+    if sum(abs(centroids(n,:) - [513, 513]).^2) < (1.5*r_ignored)^2
         centroids(n,:) = [];
     else
         n=n+1;
     end
 end
+
+%% Step 8: Merge neighbored CC positions
 
 n=1;
 while n<=size(centroids,1)
@@ -171,20 +102,19 @@ while n<=size(centroids,1)
     end
 end
 
-% while n<=size(centroids,1)
-%     ctmp = (centroids - (repmat(centroids(n,:), size(centroids,1) ,1)));
-%     dist = ctmp(:,1).^2 + ctmp(:,2).^2 < min_dist^2;
-%     if sum(dist)>1
-%         centroids(n,:) = [];
-%     else
-%         n=n+1;
-%     end
-% end
+%% Show outcome
 
 if show_img
+    figure(4);
+    subplot(331); imagesc(img); axis square; colormap fire; title('original image');
+    subplot(332); imagesc(img_edges); axis square; colormap fire; title('binary gradient mask');
+    subplot(333); imagesc(img_dilated); axis square; title('dilated gradient mask');
+    subplot(334); imagesc(img_filled); axis square; title('binary image with filled holes');
+    subplot(335); imagesc(img_eroded); axis square; title('segmented image');
+
     figure(41)
     subplot(121); imagesc(log(abs(recon))); axis square;
-    subplot(122); imagesc(~BWfinal)
+    subplot(122); imagesc(~img_eroded)
     hold on
     plot(centroids(:,1),centroids(:,2), 'r*')
     hold off
@@ -197,7 +127,7 @@ if show_img
         subplot(round(sqrt(size(centroids,1))),ceil(sqrt(size(centroids,1))),i);
         centerx = round(centroids(i,2));
         centery = round(centroids(i,1));
-        imagesc(Iorig(max(1,centerx-Npixel-1):min(1024,centerx+Npixel),max(1,centery-Npixel-1):min(1024,centery+Npixel))); axis square; colormap fire;
+        imagesc(recon_int(max(1,centerx-Npixel-1):min(1024,centerx+Npixel),max(1,centery-Npixel-1):min(1024,centery+Npixel))); axis square; colormap fire;
     end
     
 end
