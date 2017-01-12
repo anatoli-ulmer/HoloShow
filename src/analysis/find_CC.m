@@ -88,21 +88,23 @@ end
 %% Step 8: Merge neighbored CC positions
 
 n=1;
-while n<=size(centroids,1)
+while true
+    if n>size(centroids,1)
+        break
+    end
     ctmp = (centroids - (repmat(centroids(n,:), size(centroids,1) ,1)));
     dist = ctmp(:,1).^2 + ctmp(:,2).^2 < min_dist^2;
     if sum(dist)>1
         k = find(dist);
         centroids(n,:) = mean(centroids(k,:));
-        for j=2:sum(dist) 
+        for j=sum(dist):-1:2
             centroids(k(j),:) = [];
         end
-    else
-        n=n+1;
     end
+    n=n+1
 end
 
-%% Show outcome
+%% Show results
 
 if show_img
     figure(4);

@@ -348,23 +348,23 @@ if isequal(handles.centroids,[0,0])
 end
 maxPhase = get(handles.phase_slider, 'Max');
 fprintf('looking for foci...')
-handles.foci = find_foci(handles.hologram.masked, handles.lambda, handles.detDistance, -maxPhase, maxPhase, handles.centroids, 30, true, true);
+handles.foci = find_foci(handles.hologram.masked, handles.lambda, handles.detDistance, -0, maxPhase, handles.centroids, 20, true, true);
 fprintf(' done!\n')
 guidata(hObject, handles);
 
 
 function wholeRun_pushbutton_Callback(hObject, eventdata, handles)
 while true
+    handles = select_hologram(hObject, eventdata, handles);
+%     handles.centroids = find_CC(handles.recon, 'show_img', true, 'min_dist', 100, 'int_thresh', 5, 'r_ignored', 75);
+    focusCC_pushbutton_Callback(hObject, eventdata, handles);
     handles.fileIndex = handles.fileIndex+1;
     if handles.fileIndex > handles.nbr_images
         return
     end
-
     set(handles.filenames_listbox, 'Value', handles.fileIndex);
-    handles = select_hologram(hObject, eventdata, handles);
-    handles.centroids = find_CC(handles.recon, 'show_img', true, 'min_dist', 100, 'int_thresh', 5, 'r_ignored', 75);
 end
-    
+
 
 function center_pushbutton_Callback(hObject, eventdata, handles)
 [columnsToShift, rowsToshift, handles.phaseOffset] = find_center(handles.hologram.masked, handles.phase, handles.rect);

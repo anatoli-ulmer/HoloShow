@@ -8,8 +8,13 @@ if nargin<9
     showHOLO = false;
 end
 
+if size(centroids,1)==0
+    foci = 0;
+    return
+end
+
 Nfoci = size(centroids,1);
-Npixel = 50;
+Npixel = 100;
 [Xrange, Yrange] = size(hologram);
 PX_SIZE = 75e-6;
 H_center_q=Xrange/2+1;
@@ -49,7 +54,8 @@ for phase = minPhase:ste:maxPhase
         
         if showHOLO
             if firstS(CC)
-                fociAxes(CC) = subplot(round(sqrt(Nfoci)),ceil(sqrt(Nfoci)),CC); fociImage(CC) = imagesc(abs(reconcut)); axis square; colormap fire; hold on;
+                figure(35123);
+                subplot(round(sqrt(Nfoci)),ceil(sqrt(Nfoci)),CC); fociImage(CC) = imagesc(abs(reconcut)); axis square; colormap fire; hold on;
                 firstS(CC) = false;
             else
                 %                 subplot(Nfoci,1,CC);
@@ -62,34 +68,33 @@ for phase = minPhase:ste:maxPhase
 end
 
 if gpuSwitch
-    focusedCuts = gpuArray(zeros(size(reconcut,1), size(reconcut,2), Nfoci));
+    focusedCuts = gpuArray(zeros(2*(Npixel+1),2*(Npixel+1), Nfoci));
 else
-    focusedCuts = zeros(size(reconcut,1), size(reconcut,2), Nfoci);
+    focusedCuts = zeros(2*(Npixel+1), 2*(Npixel+1), Nfoci);
 end
 
 index=true(1,1,Nfoci);
 nbrPixels=zeros(1,Nfoci);
 I=gpuArray(zeros(1,Nfoci));
 
-figure(3332);
-plot(metric)
-
 for CC=1:Nfoci
+    a=1;
+    b=size(metric,1);
     while true
-    [~,I] = max(metric(:,CC));
-    switch x(I)
-        case x(1)
-            metric(1,CC) = 0;
-        case x(end)
-            metric(end,CC) = 0;
-        otherwise
+        [~,I] = max(metric(a:b,CC));
+        I = gather(I);
+        if I == a
+            a=a+1;
+        elseif I == b
+            b=b-1;
+        else
             break
-    end
+        end
     end
     
-    [~,I(CC)] = max(metric(:,CC));
-    foci(CC) = x(I(CC)); %#ok<AGROW>
-    N=round(x(I(CC))/lambda);
+    I = I+(a-1);
+    foci(CC) = x(I); %#ok<AGROW>
+    N=round(x(I)/lambda);
     prop_l=N*lambda;
     tempPhase=prop_l*tempProp;
     
@@ -98,33 +103,27 @@ for CC=1:Nfoci
     
     centerx = round(centroids(CC,2));
     centery = round(centroids(CC,1));
-    reconcut = real(recon(max(1,centerx-Npixel-1):min(1024,centerx+Npixel),max(1,centery-Npixel-1):min(1024,centery+Npixel)));
+    rcut = real(recon(max(1,centerx-Npixel-1):min(1024,centerx+Npixel),max(1,centery-Npixel-1):min(1024,centery+Npixel)));
+    focusedCuts(1:size(rcut,1),1:size(rcut,2),CC) = rcut;
     colormap gray;
-    
-    nbrPixels(CC) = size_CC(abs(gather(reconcut)));
-    
-    if nbrPixels(CC)>500
-        focusedCuts(1:size(reconcut,1),1:size(reconcut,2),CC) = reconcut;
-    else
-        index(CC)=false;
-    end
 end
 
-
-figure(3333);
-plot(metric)
-
-focusedCuts=focusedCuts(:,:,index);
-nbrPixels=nbrPixels(index(1,1,:));
-I=I(index(1,1,:));
-focusedCuts=gather(focusedCuts);
+if showHOLO
+    figure(3333);
+    try
+        plot(x,metric)
+    catch
+        size(x)
+        size(metric)
+    end
+end
 
 Nfoci=sum(index);
 
 if Nfoci>0
     figure(34555)
     for CC=1:Nfoci
-        subplot(round(sqrt(Nfoci)),ceil(sqrt(Nfoci)),CC); imagesc(real(focusedCuts(:,:,CC))); axis square; 
+        subplot(round(sqrt(Nfoci)),ceil(sqrt(Nfoci)),CC); imagesc(focusedCuts(:,:,CC)); axis square; 
         try
             title(['focus at ', num2str(round(x(I(CC)))), ', size ', num2str(nbrPixels(CC))]);
         catch
