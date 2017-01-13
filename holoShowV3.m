@@ -348,8 +348,10 @@ if isequal(handles.centroids,[0,0])
 end
 maxPhase = get(handles.phase_slider, 'Max');
 fprintf('looking for foci...')
-handles.foci = find_foci(handles.hologram.masked, handles.lambda, handles.detDistance, -0, maxPhase, handles.centroids, 20, true, true);
+tic
+handles.foci = find_foci(handles.hologram.masked, handles.lambda, handles.detDistance, -maxPhase, maxPhase, handles.centroids, 20, true, true, 2);
 fprintf(' done!\n')
+toc
 guidata(hObject, handles);
 
 

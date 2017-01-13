@@ -1,5 +1,10 @@
-function foci = find_foci(hologram, lambda, det_distance, minPhase, maxPhase, centroids, steps, gpuSwitch, showHOLO)
+function foci = find_foci(hologram, lambda, det_distance, minPhase, maxPhase, centroids, steps, gpuSwitch, showHOLO, crop_factor)
 % Copyright (c) 2015, Anatoli Ulmer <anatoli.ulmer@gmail.com>
+
+%%%% CROPING DOESN'T WORK YET! %%%%
+if nargin<10
+    crop_factor=1;
+end
 
 if nargin<8
     gpuSwitch=false;
@@ -13,8 +18,14 @@ if size(centroids,1)==0
     return
 end
 
+if crop_factor > 1
+    hologram = crop_image(hologram, crop_factor);
+    centroids = round(centroids/crop_factor);
+    sprintf('cropped by %s', crop_factor);
+end
+
 Nfoci = size(centroids,1);
-Npixel = 100;
+Npixel = round(100/crop_factor);
 [Xrange, Yrange] = size(hologram);
 PX_SIZE = 75e-6;
 H_center_q=Xrange/2+1;
@@ -46,7 +57,7 @@ for phase = minPhase:ste:maxPhase
     for CC=1:Nfoci
         centerx = round(centroids(CC,2));
         centery = round(centroids(CC,1));
-        reconcut = recon(max(1,centerx-Npixel-1):min(1024,centerx+Npixel),max(1,centery-Npixel-1):min(1024,centery+Npixel));
+        reconcut = recon(max(1,centerx-Npixel-1):min(Xrange,centerx+Npixel),max(1,centery-Npixel-1):min(Yrange,centery+Npixel));
  
         %%%%% VARICANCE AUTOFOCUS %%%%%
         ma = abs(mean(reconcut(:)));
@@ -91,7 +102,9 @@ for CC=1:Nfoci
             break
         end
     end
-    
+    if isempty(I)
+        continue
+    end
     I = I+(a-1);
     foci(CC) = x(I); %#ok<AGROW>
     N=round(x(I)/lambda);
@@ -103,7 +116,7 @@ for CC=1:Nfoci
     
     centerx = round(centroids(CC,2));
     centery = round(centroids(CC,1));
-    rcut = real(recon(max(1,centerx-Npixel-1):min(1024,centerx+Npixel),max(1,centery-Npixel-1):min(1024,centery+Npixel)));
+    rcut = real(recon(max(1,centerx-Npixel-1):min(Xrange,centerx+Npixel),max(1,centery-Npixel-1):min(Yrange,centery+Npixel)));
     focusedCuts(1:size(rcut,1),1:size(rcut,2),CC) = rcut;
     colormap gray;
 end
@@ -120,7 +133,7 @@ end
 
 Nfoci=sum(index);
 
-if Nfoci>0
+if showHOLO && Nfoci>0
     figure(34555)
     for CC=1:Nfoci
         subplot(round(sqrt(Nfoci)),ceil(sqrt(Nfoci)),CC); imagesc(focusedCuts(:,:,CC)); axis square; 
