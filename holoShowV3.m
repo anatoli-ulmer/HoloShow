@@ -22,7 +22,7 @@ function varargout = holoShowV3(varargin)
 
 % Edit the above text to modify the response to help holoShowV3
 
-% Last Modified by GUIDE v2.5 11-Jan-2017 15:26:17
+% Last Modified by GUIDE v2.5 20-Jan-2017 19:13:07
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -66,6 +66,9 @@ handles.logSwitch = get(handles.log_checkbox, 'Value');
 handles.partSwitch = get(get(handles.part_buttongroup, 'SelectedObject'), 'String');
 handles.image_correction = true;
 handles.af_method = 'variance';
+
+handles.IF_filtering = get(handles.intensity_filter_checkbox, 'Value');
+handles.IF_value = str2double(get(handles.intensity_filter_edit, 'String'));
 
 load('config_holoShow_LCLS2016.mat'); % To change standard values use 'src/config/create_config.m' to change config file
 for fn = fieldnames(config_file)'
@@ -313,7 +316,7 @@ guidata(hObject, handles);
 
 function find_phase_pushbutton_Callback(hObject, eventdata, handles)
 maxPhase = get(handles.phase_slider, 'Max');
-handles.phase = find_focus(handles.hologram.masked, handles.lambda, handles.detDistance, handles.rect, -maxPhase, maxPhase, 100, handles.af_method, true, handles.gpu, get(handles.makeGIF_checkbox,'value'));
+handles.phase = find_focus(handles.hologram.masked, handles.lambda, handles.detDistance, handles.rect, -maxPhase, maxPhase, 100, handles.af_method, true, handles.gpu, get(handles.makeGIF_checkbox,'value'), 1);
 set(handles.phase_slider, 'Value', handles.phase);
 set(handles.phase_edit, 'String', num2str(round(handles.phase)));
 handles = refreshImage(hObject, eventdata, handles);
@@ -332,7 +335,8 @@ guidata(hObject, handles);
 
 
 function findCC_pushbutton_Callback(hObject, eventdata, handles)
-handles.centroids = find_CC(handles.recon, 'show_img', true, 'min_dist', 100, 'int_thresh', 5, 'r_ignored', 75);
+% rec = dlmread('C:\Users\Toli\Downloads\189004407 (1).dat')';
+handles.centroids = find_CC(handles.hologram.masked, 'show_img', true, 'min_dist', 100, 'int_thresh', 5, 'r_ignored', 75, 'crop_factor', handles.crop_factor);
 if isequal(handles.centroids,[0,0])
     msgbox('no cross correlations found!')
 end
@@ -341,22 +345,26 @@ guidata(hObject, handles);
 
 function focusCC_pushbutton_Callback(hObject, eventdata, handles)
 fprintf('looking for cross correlations...')
-handles.centroids = find_CC(handles.recon, 'show_img', true, 'min_dist', 100, 'int_thresh', 5, 'r_ignored', 75);
+handles.centroids = find_CC(handles.hologram.masked, 'show_img', true, 'min_dist', 100, 'int_thresh', 5, 'r_ignored', 75, 'crop_factor', handles.crop_factor);
 fprintf(' done!\n')
 if isequal(handles.centroids,[0,0])
     return
 end
 maxPhase = get(handles.phase_slider, 'Max');
 fprintf('looking for foci...')
-tic
-handles.foci = find_foci(handles.hologram.masked, handles.lambda, handles.detDistance, -maxPhase, maxPhase, handles.centroids, 20, true, true, 2);
+
+handles.foci = find_foci(handles.hologram.masked, handles.lambda, handles.detDistance, handles.centroids, ...
+    'z_start', -maxPhase, 'z_end', maxPhase, 'steps', 20, 'use_gpu', true, 'show_results', true, 'crop_factor', handles.crop_factor);
 fprintf(' done!\n')
-toc
 guidata(hObject, handles);
 
 
 function wholeRun_pushbutton_Callback(hObject, eventdata, handles)
 while true
+    if get(handles.abort_pushbutton, 'UserData')
+        set(handles.abort_pushbutton, 'UserData', false)
+        break
+    end
     handles = select_hologram(hObject, eventdata, handles);
 %     handles.centroids = find_CC(handles.recon, 'show_img', true, 'min_dist', 100, 'int_thresh', 5, 'r_ignored', 75);
     focusCC_pushbutton_Callback(hObject, eventdata, handles);
@@ -749,10 +757,64 @@ for run=1:length(handles.runfolders)
                 continue
             end
             maxPhase = get(handles.phase_slider, 'Max');
-            find_foci(handles.hologram.masked, handles.centroids, -maxPhase, maxPhase, 200, handles.pathname, handles.currentFile, true, false);            
+            handles.foci = find_foci(handles.hologram.masked, handles.lambda, handles.detDistance, handles.centroids, ...
+    'z_start', -maxPhase, 'z_end', maxPhase, 'steps', 20, 'use_gpu', true, 'show_results', true, 'crop_factor', handles.crop_factor);           
         catch
             fprintf('failed on %s !!!\n', handles.currentFile);
         end
     end
+end
+guidata(hObject, handles);
+
+
+function abort_pushbutton_Callback(hObject, eventdata, handles)
+set(handles.abort_pushbutton, 'UserData', true);
+guidata(hObject, handles);
+
+
+function intensity_filter_edit_Callback(hObject, eventdata, handles)
+handles.IF_filtering = get(handles.intensity_filter_checkbox, 'Value');
+handles.IF_value = str2double(get(handles.intensity_filter_edit, 'String'));
+handles = refresh_hologram(hObject, eventdata, handles);
+guidata(hObject, handles);
+
+
+function intensity_filter_edit_CreateFcn(hObject, eventdata, handles)
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+function intensity_filter_checkbox_Callback(hObject, eventdata, handles)
+handles.IF_value = str2double(get(handles.intensity_filter_edit, 'String'));
+handles.IF_filtering = get(handles.intensity_filter_checkbox, 'Value');
+handles = refresh_hologram(hObject, eventdata, handles);
+guidata(hObject, handles);
+
+
+function crop_edit_Callback(hObject, eventdata, handles)
+handles.crop_image = get(handles.crop_checkbox, 'Value');
+crp_fct = round(str2double(get(handles.crop_edit, 'String')));
+if crp_fct > 1 && handles.crop_image
+    handles.crop_factor = crp_fct;
+else
+    handles.crop_factor = 1;
+end
+guidata(hObject, handles);
+
+
+function crop_edit_CreateFcn(hObject, eventdata, handles)
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+function crop_checkbox_Callback(hObject, eventdata, handles)
+handles.crop_image = get(handles.crop_checkbox, 'Value');
+crp_fct = round(str2double(get(handles.crop_edit, 'String')));
+if crp_fct > 1 && handles.crop_image
+    handles.crop_factor = crp_fct;
+else
+    handles.crop_factor = 1;
 end
 guidata(hObject, handles);

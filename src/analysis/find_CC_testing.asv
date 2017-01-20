@@ -1,5 +1,5 @@
 %% modified segmentation algorithm from http://de.mathworks.com/help/images/examples/detecting-a-cell-using-image-segmentation.html
-function centroids = find_CC(hologram, varargin)
+function centroids = find_CC_testing(hologram, varargin)
 
 show_img = true;
 min_dist = 100;
@@ -8,8 +8,7 @@ r_ignored = 75;
 r_dilate = 15;
 r_erode = 10;
 fudge_factor = 1;
-crop_factor = 1;
-min_size = 500;
+crop = 1;
 
 if exist('varargin','var')
     L = length(varargin);
@@ -23,19 +22,21 @@ if exist('varargin','var')
             case 'r_dilate', r_dilate = varargin{ni+1};
             case 'r_erode', r_erode = varargin{ni+1};
             case 'fudge_factor', fudge_factor = varargin{ni+1};
-            case 'crop_factor', crop_factor = varargin{ni+1};
-            case 'min_size', min_size = varargin{ni+1};
+            case 'crop', crop = varargin{ni+1};
         end
     end
 end
 
-if crop_factor>1
-    hologram = crop_image(hologram, crop_factor);
-    r_ignored = r_ignored/crop_factor;
-    min_dist = min_dist/crop_factor;
-    r_dilate = ceil(r_dilate/crop_factor);
-    r_erode = ceil(r_erode/crop_factor);
-    min_size = min_size/crop_factor;
+% s1 = sum(sum(abs(hologram(1:512,1:512))))
+% s2 = sum(sum(abs(hologram(1:512,513:end))))
+% s3 = sum(sum(abs(hologram(513:end,513:end))))
+% s4 = sum(sum(abs(hologram(513:end,1:512))))
+
+if crop>1
+    hologram = crop_image(hologram, crop);
+    r_ignored = r_ignored/crop;
+    min_dist = min_dist/crop;
+    sprintf('cropping not integrated yet!');
 end
 recon = ift2(hologram);
 [Xrange, Yrange] = size(recon);
@@ -45,7 +46,11 @@ recon = ift2(hologram);
 recon_int = abs(recon); % look only at intensity
 [X,Y] = meshgrid(-Xrange/2:Xrange/2-1,-Yrange/2:Yrange/2-1);
 img = recon_int.*(X.^2 + Y.^2 > r_ignored^2); % center part (autocorrelation) is ignored
-img(img<int_thresh*median(img(:))) = 0; % minimum intensity threshold
+
+imgtemp = img;
+
+med = median(img(:));
+img(img<5*med) = med; % minimum intensity threshold
 
 %% Step 2: Sobel Edge detection
 
@@ -55,6 +60,9 @@ else
     [~, threshold] = edge(img, 'sobel'); 
     img_edges = edge(img,'sobel', threshold * fudge_factor);
 end
+
+imgtemp = imgaussfilt(imgtemp, 10);
+img=
 
 %% Step 3: Dilate the Image
 
@@ -73,7 +81,7 @@ img_eroded = imerode(img_filled, se_erode);
 
 %% Step 6: Remove small Objects
 
-img_cleared = bwareaopen(img_eroded, min_size); % Remove small Objects
+img_cleared = bwareaopen(img_eroded, 500); % Remove small Objects
 % BWfinal = BWfinal - bwareaopen(BWfinal, 10000); % Remove big Objects
 
 %% Step 7: Find connected areas
@@ -146,6 +154,7 @@ if show_img
         centery = round(centroids(i,1));
         imagesc(recon_int(max(1,centerx-Npixel-1):min(Yrange,centerx+Npixel),max(1,centery-Npixel-1):min(Xrange,centery+Npixel))); axis square; colormap fire;
     end
+    
 end
 
-centroids = centroids * crop_factor;
+centroids = centroids * crop;

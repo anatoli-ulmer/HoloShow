@@ -10,6 +10,8 @@ end
 
 %% READ RAW DATA
 fprintf('loading file: %s ...', handles.currentFile);
+[~,~,handles.ext] = fileparts(fullfile(handles.pathname,handles.currentFile));
+
 switch handles.ext
     case '.dat'
         handles.hologram.orig = dlmread(fullfile(handles.pathname,handles.currentFile));
@@ -25,7 +27,7 @@ switch handles.ext
             handles.hologram.orig(607, 1:21) = 0;
             handles.hologram.orig(1:1024, 1:24) = 0;
             handles.hologram.orig(1:1024, 1000:1024) = 0;
-            handles.hologram.orig(385:511,513:end) = handles.hologram.orig(385:511,513:end)*2;
+%             handles.hologram.orig(385:511,513:end) = handles.hologram.orig(385:511,513:end)*2;
             handles.hologram.orig = handles.hologram.orig(1:1024,1:1024);
             handles.hologram.orig(512:end,510:end) = simpleshift(handles.hologram.orig(512:end,510:end) , [0,12]);
             handles.hologram.orig(1:511,513:end) = simpleshift(handles.hologram.orig(1:511,513:end) , [0,12]);

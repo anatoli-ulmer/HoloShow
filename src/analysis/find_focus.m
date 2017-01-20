@@ -1,13 +1,22 @@
-function focus = find_focus(hologram, lambda, CCD_S_DIST, ROI, minPhase, maxPhase, steps, af_method, showHOLO, gpuSwitch, makeGIF)
+function focus = find_focus(hologram, lambda, det_distance, ROI, minPhase, maxPhase, steps, af_method, showHOLO, gpuSwitch, makeGIF, crop_factor)
 % Copyright (c) 2016, Anatoli Ulmer <anatoli.ulmer@gmail.com>
 
 fprintf('looking for focus ...\n');
 
+if nargin<10
+    crop_factor = false;
+end
 if nargin<9
-    gpuSwitch=false;
+    gpuSwitch = false;
 end
 if nargin<8
     showHOLO = false;
+end
+
+if crop_factor > 1
+    hologram = crop_image(hologram, crop_factor);
+    ROI = round(ROI/crop_factor);
+    sprintf('cropped by %s', crop_factor);
 end
 
 [Xrange, Yrange] = size(hologram);
@@ -16,7 +25,7 @@ H_center_q=Xrange/2+1;
 H_center_p=Yrange/2+1;
 [p,q] = meshgrid(1:Xrange, 1:Yrange);
 
-tempProp=(2*pi/(lambda*1e9))*(1-((PX_SIZE/CCD_S_DIST)^2)*((q-H_center_q).^2+ (p-H_center_p).^2)).^(1/2); % plane wave propagation
+tempProp=(2*pi/(lambda*1e9))*(1-((PX_SIZE/det_distance)^2)*((q-H_center_q).^2+ (p-H_center_p).^2)).^(1/2); % plane wave propagation
 % tempProp=-pi*lambda*(PX_SIZE/CCD_S_DIST)^2*((q-H_center_q).^2+ (p-H_center_p).^2); % Fresnel Rayleigh propagator
 ste = (maxPhase-minPhase)/steps;
 
@@ -103,7 +112,7 @@ for phase = minPhase:ste:maxPhase
                 end
             end
             
-            focusFigure = figure(3);
+            focusFigure = figure(200);
             clf(focusFigure)
 %             focusFigure.Units = 'normalized';
 %             set(focusFigure,'Name','find focus','Position', [0.1,0.3,0.5,0.2]);

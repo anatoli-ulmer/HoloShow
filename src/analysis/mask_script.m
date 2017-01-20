@@ -9,7 +9,9 @@ function handles_return = mask_script(handles)
 HP_filter = handles.HPfiltering;
 HP_radius = handles.HPfrequency;
 LP_filter = handles.LPfiltering;
-LP_radius = handles.LPfrequency;%332;%
+LP_radius = handles.LPfrequency;
+IF_filter = handles.IF_filtering;
+IF_value = handles.IF_value;
 CM_thresh = 50;
 rowsToshift = round(handles.ycenter);
 columnsToShift =  round(handles.xcenter);
@@ -26,6 +28,9 @@ showSMOOTH = false; % show smoothed mask and pattern
 
 origdata = handles.hologram.orig;
 origdata(abs(origdata)>=15000) = 0; % set saturated pixels to 0
+if IF_filter
+    origdata(abs(origdata)>IF_value) = 0;
+end
 origdata(origdata<-50)=0;
 
 if handles.load_mask
