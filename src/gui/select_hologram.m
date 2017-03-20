@@ -35,6 +35,8 @@ switch handles.ext
         end
     case '.cxi'
         handles.hologram.orig = h5read(fullfile(handles.pathname, handles.first_file), handles.cxi_entryname, [1 1 handles.fileIndex],[1024 1024 1]);
+    case '.h5'
+        handles.hologram.orig = h5read(fullfile(handles.pathname, handles.first_file), handles.cxi_entryname, [1+handles.img_offset 1 handles.fileIndex],[1024 1024 1]);
 end
 
 fprintf(' done! \n');

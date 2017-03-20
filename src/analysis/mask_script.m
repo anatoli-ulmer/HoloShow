@@ -12,7 +12,7 @@ LP_filter = handles.LPfiltering;
 LP_radius = handles.LPfrequency;
 IF_filter = handles.IF_filtering;
 IF_value = handles.IF_value;
-CM_thresh = 50;
+CM_thresh = handles.cm_thresh;
 rowsToshift = round(handles.ycenter);
 columnsToShift =  round(handles.xcenter);
 slit = handles.slit;
@@ -27,7 +27,7 @@ showSMOOTH = false; % show smoothed mask and pattern
 %% LOAD DATA & MASK
 
 origdata = handles.hologram.orig;
-origdata(abs(origdata)>=15000) = 0; % set saturated pixels to 0
+origdata(abs(origdata)>=handles.adu_max) = 0; % set saturated pixels to 0
 if IF_filter
     origdata(abs(origdata)>IF_value) = 0;
 end
@@ -51,14 +51,15 @@ end
 %% CENTER PICTURE & COMMON MODE
 
 % CORRECTION OF CENTER SHIFT
-data = circshift(origdata,[rowsToshift columnsToShift]);
-mask = circshift(mask,[rowsToshift columnsToShift]);
+data = simpleshift(origdata,[rowsToshift columnsToShift]);
+mask = simpleshift(mask,[rowsToshift columnsToShift]);
 
 % SECOND CORRECTION THROUH VARIANCE AND DETECTOR SHIFTS
-sdata = circshift(data,[slit, shift]);
-smask = circshift(mask,[slit, shift]);
+sdata = simpleshift(data,[slit, shift]);
+smask = simpleshift(mask,[slit, shift]);
 data(513+slit:end,:) = sdata(513+slit:end,:);
 mask(513+slit:end,:) = smask(513+slit:end,:);
+mask(513:513+slit,:) = 0;
 data(isnan(data)) = 0;
 
 % HIGHPASS FILTERING %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Modified see below!
@@ -95,7 +96,7 @@ if handles.do_CM
         end
     end
 end
-data(data<30)=0;
+data(data<handles.adu_min)=0;
 
 if showCM
     figure(22);

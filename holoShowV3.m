@@ -1,15 +1,15 @@
 function varargout = holoShowV3(varargin)
-% HOLOSHOWV3 MATLAB code for holoShowV3.fig
-%      HOLOSHOWV3, by itself, creates a new HOLOSHOWV3 or raises the existing
+% HOLOSHOW MATLAB code for holoShow.fig
+%      HOLOSHOW, by itself, creates a new HOLOSHOW or raises the existing
 %      singleton*.
 %
-%      H = HOLOSHOWV3 returns the handle to a new HOLOSHOWV3 or the handle to
+%      H = HOLOSHOW returns the handle to a new HOLOSHOW or the handle to
 %      the existing singleton*.
 %
-%      HOLOSHOWV3('CALLBACK',hObject,eventData,handlesx,...) calls the local
-%      function named CALLBACK in HOLOSHOWV3.M with the given input arguments.
+%      HOLOSHOW('CALLBACK',hObject,eventData,handlesx,...) calls the local
+%      function named CALLBACK in HOLOSHOW.M with the given input arguments.
 %
-%      HOLOSHOWV3('Property','Value',...) creates a new HOLOSHOWV3 or raises the
+%      HOLOSHOW('Property','Value',...) creates a new HOLOSHOW or raises the
 %      existing singleton*.  Starting from the left, property value pairs are
 %      applied to the GUI before holoShowV3_OpeningFcn gets called.  An
 %      unrecognized property name or invalid value makes property application
@@ -20,9 +20,9 @@ function varargout = holoShowV3(varargin)
 %
 % See also: GUIDE, GUIDATA, GUIHANDLES
 
-% Edit the above text to modify the response to help holoShowV3
+% Edit the above text to modify the response to help holoShow
 
-% Last Modified by GUIDE v2.5 20-Jan-2017 19:13:07
+% Last Modified by GUIDE v2.5 13-Mar-2017 18:31:45
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -49,14 +49,17 @@ function holoShowV3_OpeningFcn(hObject, eventdata, handles, varargin)
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-% varargin   command line arguments to holoShowV3 (see VARARGIN)
+% varargin   command line arguments to holoShow (see VARARGIN)
 
-% Choose default command line output for holoShowV3
+% Choose default command line output for holoShow
 [handles.sourcepath,~,~] = fileparts(mfilename('fullpath'));
 addpath(genpath(handles.sourcepath));
+% 
+% handles.cxi_entryname = '/entry_1/image_1/data';
+% handles.cxi_identifier = '/entry_1/experiment_identifier';
 
-handles.cxi_entryname = '/entry_1/image_1/data';
-handles.cxi_identifier = '/entry_1/experiment_identifier';
+handles.cxi_entryname = '/entry_1/data_1/data';
+handles.cxi_identifier = '/entry_1/event/bunch_id';
 
 handles.output = hObject;
 handles.hologramFigure = figure('Name','hologram');
@@ -66,11 +69,12 @@ handles.logSwitch = get(handles.log_checkbox, 'Value');
 handles.partSwitch = get(get(handles.part_buttongroup, 'SelectedObject'), 'String');
 handles.image_correction = true;
 handles.af_method = 'variance';
+handles.crop_factor = round(str2double(get(handles.crop_edit, 'String')));
 
 handles.IF_filtering = get(handles.intensity_filter_checkbox, 'Value');
 handles.IF_value = str2double(get(handles.intensity_filter_edit, 'String'));
 
-load('config_holoShow_LCLS2016.mat'); % To change standard values use 'src/config/create_config.m' to change config file
+load('config_holoShow_FLASH2017.mat'); % To change standard values use 'src/config/create_config.m' to change config file
 for fn = fieldnames(config_file)'
    handles.(fn{1}) = config_file.(fn{1});
 end
@@ -95,8 +99,8 @@ set(groot,'DefaultFigureColormap',gray)
 % Update handles structure
 guidata(hObject, handles);
 
-% UIWAIT makes holoShowV3 wait for user response (see UIRESUME)
-% uiwait(handles.holoShowV3);
+% UIWAIT makes holoShow wait for user response (see UIRESUME)
+% uiwait(handles.holoShow);
 
 
 % --- Outputs from this function are returned to the command line.
@@ -112,7 +116,7 @@ varargout{1} = handles.output;
 
 function load_pushbutton_Callback(hObject, eventdata, handles)
 set(handles.filenames_listbox, 'Value', 1); % set selection to first entry
-[handles.filenames, handles.pathname] = uigetfile('*.dat;*.mat;*.h5;*.cxi','select hologram files','E:\LCLS\data','MultiSelect','On'); % get list of files and path
+[handles.filenames, handles.pathname] = uigetfile('*.dat;*.mat;*.h5;*.cxi','select hologram files','E:\FLASH2017\data','MultiSelect','On'); % get list of files and path
 
 if iscell(handles.filenames)
     handles.first_file = handles.filenames{1};
@@ -121,10 +125,10 @@ else
 end
 [~,~,handles.ext] = fileparts(handles.first_file);
 
-if strcmp(handles.ext, '.cxi')
-    entrylist = h5read(fullfile(handles.pathname, handles.first_file), handles.cxi_identifier);
-    set(handles.filenames_listbox, 'String', entrylist);
-    handles.nbr_images = size(entrylist,1);
+if strcmp(handles.ext, '.cxi') || strcmp(handles.ext, '.h5')
+    handles.entrylist = h5read(fullfile(handles.pathname, handles.first_file), handles.cxi_identifier);
+    set(handles.filenames_listbox, 'String', num2str(handles.entrylist));
+    handles.nbr_images = size(handles.entrylist,1);
 else
     set(handles.filenames_listbox, 'String', handles.filenames);
     handles.nbr_images = size(handles.filenames,2);
@@ -133,7 +137,7 @@ guidata(hObject, handles);
 
 
 function filenames_listbox_Callback(hObject, eventdata, handles)
-if strcmp(get(handles.holoShowV3,'SelectionType'),'open')
+if strcmp(get(handles.holoShow,'SelectionType'),'open')
     handles.fileIndex = get(handles.filenames_listbox, 'Value'); % get index of selection
     handles = select_hologram(hObject, eventdata, handles); % GRAB HOLOGRAM
     guidata(hObject, handles);
@@ -151,7 +155,7 @@ handles = select_hologram(hObject, eventdata, handles); % GRAB HOLOGRAM
 guidata(hObject, handles);
 
 
-function holoShowV3_CloseRequestFcn(hObject, eventdata, handles)
+function holoShow_CloseRequestFcn(hObject, eventdata, handles)
 delete(hObject);
 close(handles.reconstructionFigure);
 close(handles.hologramFigure);
@@ -347,15 +351,27 @@ function focusCC_pushbutton_Callback(hObject, eventdata, handles)
 fprintf('looking for cross correlations...')
 handles.centroids = find_CC(handles.hologram.masked, 'show_img', true, 'min_dist', 100, 'int_thresh', 5, 'r_ignored', 75, 'crop_factor', handles.crop_factor);
 fprintf(' done!\n')
-if isequal(handles.centroids,[0,0])
-    return
+if ~isequal(handles.centroids,[0,0])
+    maxPhase = get(handles.phase_slider, 'Max');
+    fprintf('looking for foci...')
+    
+    handles.foci = find_foci(handles.hologram.masked, handles.lambda, handles.detDistance, handles.centroids, ...
+        'z_start', -maxPhase, 'z_end', maxPhase, 'steps', 20, 'use_gpu', true, 'show_results', true, 'crop_factor', handles.crop_factor);
+    fprintf(' done!\n')
+    
+    try 
+    if get(handles.save_checkbox, 'Value')
+        if strcmp(handles.ext, '.cxi') || strcmp(handles.ext, '.h5')
+            print(34555, fullfile(handles.sourcepath, 'analysis', [handles.currentFile(1:end-3), '_', num2str(handles.entrylist(handles.fileIndex)), '.png']),'-dpng');
+        else
+            print(34555, fullfile(handles.sourcepath, 'analysis', [handles.currentFile(1:end-3), '.png']),'-dpng');
+        end
+    end
+    catch
+        'saving focused CCs did not work!'
+    end
+    
 end
-maxPhase = get(handles.phase_slider, 'Max');
-fprintf('looking for foci...')
-
-handles.foci = find_foci(handles.hologram.masked, handles.lambda, handles.detDistance, handles.centroids, ...
-    'z_start', -maxPhase, 'z_end', maxPhase, 'steps', 20, 'use_gpu', true, 'show_results', true, 'crop_factor', handles.crop_factor);
-fprintf(' done!\n')
 guidata(hObject, handles);
 
 
@@ -368,6 +384,7 @@ while true
     handles = select_hologram(hObject, eventdata, handles);
 %     handles.centroids = find_CC(handles.recon, 'show_img', true, 'min_dist', 100, 'int_thresh', 5, 'r_ignored', 75);
     focusCC_pushbutton_Callback(hObject, eventdata, handles);
+    
     handles.fileIndex = handles.fileIndex+1;
     if handles.fileIndex > handles.nbr_images
         return
@@ -485,22 +502,30 @@ guidata(hObject, handles);
 
 
 function goodShot_pushbutton_Callback(hObject, eventdata, handles)
-shotlist=get(handles.filenames_listbox, 'String');
-shotname=char(shotlist(get(handles.filenames_listbox, 'Value'))) %#ok<NOPRT>
-foldername=shotname(1:5);
+shotlist = get(handles.filenames_listbox, 'String');
+shotname = shotlist(get(handles.filenames_listbox, 'Value'),:) %#ok<NOPRT>
+% foldername=shotname(1:5);
 anapath = fullfile(handles.sourcepath, 'analysis','good_shots');
 if ~exist(anapath, 'dir')
     mkdir(anapath)
 end
-fileID=fopen(fullfile(anapath,[foldername,'.txt']),'a');
+
+% if strcmp(handles.ext, '.cxi') || strcmp(handles.ext, '.h5')
+%     shotname = num2str(handles.entrylist(handles.fileIndex));
+% else
+%     shotname = handles.currentFile;
+% end
+
+% fileID=fopen(fullfile(anapath,[foldername,'.txt']),'a');
+fileID=fopen(fullfile(anapath,'goodshots.txt'),'a');
 fprintf(fileID,'%s\n',shotname);
 fclose(fileID);
 
-picpath = 'E:\LCLS\data\+mimi\pics';
-print(figure(1), fullfile(picpath, [shotname(1:end-4), '_scatt.png']), '-dpng');
-print(figure(2), fullfile(picpath, [shotname(1:end-4), '_recon.png']), '-dpng');
-print(figure(81), fullfile(picpath, [shotname(1:end-4), '_resolution.png']), '-dpng');
-print(figure(23446), fullfile(picpath, [shotname(1:end-4), '_decon.png']), '-dpng');
+% picpath = 'E:\LCLS\data\+mimi\pics';
+% print(figure(1), fullfile(picpath, [shotname(1:end-4), '_scatt.png']), '-dpng');
+% print(figure(2), fullfile(picpath, [shotname(1:end-4), '_recon.png']), '-dpng');
+% print(figure(81), fullfile(picpath, [shotname(1:end-4), '_resolution.png']), '-dpng');
+% print(figure(23446), fullfile(picpath, [shotname(1:end-4), '_decon.png']), '-dpng');
 
 
 
@@ -558,43 +583,6 @@ guidata(hObject, handles);
 function makeGIF_checkbox_Callback(hObject, eventdata, handles)
 
 
-function decon_checkbox_Callback(hObject, eventdata, handles)
-fprintf('deconvoluting ...');
-handles.hologram.propagated = propagate(abs(handles.hologram.masked), handles.phase, handles.lambda, handles.detDistance);
-handles.hologram.propagated = handles.hologram.propagated.*exp(1i*handles.phaseOffset);
-
-if isfield(handles,'SNR2D')
-    handles.wiener=1./handles.SNR2D;
-else
-    handles.wiener=1;
-end
-
-if ~isfield(handles,'reconSpec')
-    handles.reconSpec=1;
-end
-
-handles.wiener=90^2;
-% handles.wiener=1e5;
-
-if get(handles.decon_checkbox,'value')
-    handles.hologram.deconvoluted = cluster_deconvolution(handles.hologram.propagated, handles.mask,...
-        handles.clusterradius, handles.reconSpec, handles.wiener, handles.lambda, handles.detDistance);
-    handles.recon = ift2(handles.hologram.deconvoluted);
-else
-    handles.recon = ift2(handles.hologram.propagated);
-end
-
-figure(23446);
-
-imagesc(part_and_scale(handles.recon(handles.rect(2):handles.rect(2)+handles.rect(4),handles.rect(1):handles.rect(1)+handles.rect(3)),...
-    handles.logSwitch, handles.partSwitch));
-axis square;
-title(num2str(handles.clusterradius));
-
-fprintf('done! \n')
-guidata(hObject, handles);
-
-
 function clusterradius_edit_Callback(hObject, eventdata, handles)
 handles.clusterradius=str2double(strrep(get(handles.clusterradius_edit,'String'),',','.'));
 fprintf('Cluster radius changed to %.1f nm \n', handles.clusterradius)
@@ -608,18 +596,41 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
+function decon_checkbox_Callback(hObject, eventdata, handles)
+fprintf('deconvoluting ...');
+handles.hologram.propagated = propagate(abs(handles.hologram.masked), handles.phase, handles.lambda, handles.detDistance);
+handles.hologram.propagated = handles.hologram.propagated.*exp(1i*handles.phaseOffset);
+
+if ~isfield(handles,'reconSpec')
+    handles.reconSpec=1;
+end
+if ~isfield(handles,'reconcutSpec')
+    handles.reconcutSpec=1;
+end
+
+if get(handles.decon_checkbox,'value')
+    handles.hologram.deconvoluted = cluster_deconvolution(handles);
+    handles.recon = ift2(handles.hologram.deconvoluted);
+else
+    handles.recon = ift2(handles.hologram.propagated);
+end
+
+figure(23446);
+
+imagesc(part_and_scale(handles.recon(handles.rect(2):handles.rect(2)+handles.rect(4),handles.rect(1):handles.rect(1)+handles.rect(3)),...
+    handles.logSwitch, handles.partSwitch));
+axis square;
+title(['cluster radius = ', num2str(handles.clusterradius)]); drawnow;
+
+fprintf('done! \n')
+guidata(hObject, handles);
+
+
 function find_decon_pushbutton_Callback(hObject, eventdata, handles)
 fprintf('looking for cluster radius ...');
 handles.hologram.propagated = propagate(abs(handles.hologram.masked), handles.phase, handles.lambda, handles.detDistance);
 handles.hologram.propagated = handles.hologram.propagated.*exp(1i*handles.phaseOffset);
 
-% if isfield(handles,'SNR2D')
-%     wiener=1./handles.SNR2D;
-% else
-%     wiener=1;
-% end
-
-handles.wiener=85^2;
 handles.clusterradius = find_decon(handles);
 set(handles.clusterradius_edit, 'String', num2str(handles.clusterradius));
 decon_checkbox_Callback(hObject, eventdata, handles);
@@ -640,7 +651,7 @@ handles = refresh_hologram(hObject, eventdata, handles);
 guidata(hObject, handles);
 
 
-function holoShowV3_KeyPressFcn(hObject, eventdata, handles)
+function holoShow_KeyPressFcn(hObject, eventdata, handles)
 handles = arrow_keys_callback(hObject, eventdata, handles);
 figure(hObject);
 guidata(hObject, handles);
@@ -648,7 +659,7 @@ guidata(hObject, handles);
 
 function filenames_listbox_KeyPressFcn(hObject, eventdata, handles)
 handles = arrow_keys_callback(hObject, eventdata, handles);
-figure(handles.holoShowV3);
+figure(handles.holoShow);
 guidata(hObject, handles);
 
 function wavelength_edit_Callback(hObject, eventdata, handles)
@@ -816,5 +827,34 @@ if crp_fct > 1 && handles.crop_image
     handles.crop_factor = crp_fct;
 else
     handles.crop_factor = 1;
+end
+guidata(hObject, handles);
+
+
+function save_checkbox_Callback(hObject, eventdata, handles)
+
+
+function plusphase_pushbutton_Callback(hObject, eventdata, handles)
+handles.phase = str2double(get(handles.phase_edit, 'String')) + 100;
+set(handles.phase_edit, 'String', num2str(handles.phase));
+set(handles.phase_slider, 'Value', handles.phase);
+handles = refreshImage(hObject, eventdata, handles);
+guidata(hObject, handles);
+
+function minusphase_pushbutton_Callback(hObject, eventdata, handles)
+handles.phase = str2double(get(handles.phase_edit, 'String')) - 100;
+set(handles.phase_edit, 'String', num2str(handles.phase));
+set(handles.phase_slider, 'Value', handles.phase);
+handles = refreshImage(hObject, eventdata, handles);
+guidata(hObject, handles);
+
+
+% --- Executes on button press in parameter_window_pushbutton.
+function parameter_window_pushbutton_Callback(hObject, eventdata, handles)
+handles.parameter_figure = findobj('Tag','parameter_figure');
+if size(handles.parameter_figure,1) < 1
+    handles.paramter_gui = parameter_window;
+else
+    figure(handles.paramter_gui)
 end
 guidata(hObject, handles);
