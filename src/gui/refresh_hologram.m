@@ -7,7 +7,7 @@ if handles.image_correction
 else
     handles.hologram.masked = handles.hologram.orig;
     handles.mask = ones(1024);
-    handles.hardmask =  ones(1024);
+    handles.hardmask = ones(1024);
 end
 
 handles.hologram.masked = handles.hologram.masked.*exp(1i*handles.phaseOffset);

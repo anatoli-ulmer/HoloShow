@@ -1,0 +1,30 @@
+handles.lambda = 1.055e-9;
+handles.detDistance = 0.735;
+handles.load_mask = true;
+
+handles.minScale = -2;
+handles.maxScale = 2;
+handles.colormap = 'ms';
+handles.centroids = [0,0];
+handles.phase = 0;
+handles.phaseOffset = 0;
+handles.HPfiltering = true;
+handles.LPfiltering = false;
+handles.HPfrequency = 50;
+handles.LPfrequency = 330;
+handles.clusterradius = 30;
+
+handles.img_offset = 0;
+handles.add_slit = 27;
+handles.add_shift = 3;
+handles.xcenter = 5;
+handles.ycenter = -40;
+handles.adu_min = 50;
+handles.adu_max = 11000;
+handles.do_cm = true;
+handles.cm_thresh = 30;
+handles.cluster_material = 'Xe';
+handles.decon_profile = 'mie';
+handles.mie_precision = 50000;
+handles.scat_ratio = 2;
+handles.gpu = true;

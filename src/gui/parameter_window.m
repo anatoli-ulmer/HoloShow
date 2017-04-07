@@ -58,17 +58,17 @@ holoShow_figure = findobj('Tag','holoShow');
 holoShow_guidata = guidata(holoShow_figure);
 handles.parameter = {...
     'img_offset', holoShow_guidata.img_offset;...%1
-    'add_slit', holoShow_guidata.slit;...%2
-    'add_shift', holoShow_guidata.shift;...%3
+    'add_slit', holoShow_guidata.add_slit;...%2
+    'add_shift', holoShow_guidata.add_shift;...%3
     'xcenter', holoShow_guidata.xcenter;...%4
     'ycenter', holoShow_guidata.ycenter;...%5
     'adu_min', holoShow_guidata.adu_min;...%6
     'adu_max', holoShow_guidata.adu_max;...%7
-    'do_cm', holoShow_guidata.do_CM;...%8
+    'do_cm', holoShow_guidata.do_cm;...%8
     'cm_thresh', holoShow_guidata.cm_thresh;...%9
     'cluster_material', holoShow_guidata.cluster_material;...
     'decon_profile', holoShow_guidata.decon_profile;...
-    'decon_profile', holoShow_guidata.mie_precision;...
+    'mie_precision', holoShow_guidata.mie_precision;...
     'scat_ratio', holoShow_guidata.scat_ratio;...
     'gpu', holoShow_guidata.gpu;...
     };
@@ -91,22 +91,38 @@ function parameter_uitable_CellEditCallback(hObject, eventdata, handles)
 td = get(handles.parameter_uitable, 'data');
 holoShow_figure = findobj('Tag','holoShow');
 holoShow_guidata = guidata(holoShow_figure);
+% 
+% holoShow_guidata.img_offset = td{1,2};
+% holoShow_guidata.add_slit = td{2,2};
+% holoShow_guidata.add_shift = td{3,2};
+% holoShow_guidata.xcenter = td{4,2};
+% holoShow_guidata.ycenter = td{5,2};
+% holoShow_guidata.adu_min = td{6,2};
+% holoShow_guidata.adu_max = td{7,2};
+% holoShow_guidata.do_cm = td{8,2};
+% holoShow_guidata.cm_thresh = td{9,2};
+% 
+% holoShow_guidata.cluster_material = td{10,2};
+% holoShow_guidata.decon_profile = td{11,2};
+% holoShow_guidata.mie_precision = td{12,2};
+% holoShow_guidata.scat_ratio = td{13,2};
+% holoShow_guidata.gpu = td{14,2};
 
-holoShow_guidata.img_offset = td{1,2};
-holoShow_guidata.slit = td{2,2};
-holoShow_guidata.shift = td{3,2};
-holoShow_guidata.xcenter = td{4,2};
-holoShow_guidata.ycenter = td{5,2};
-holoShow_guidata.adu_min = td{6,2};
-holoShow_guidata.adu_max = td{7,2};
-holoShow_guidata.do_CM = td{8,2};
-holoShow_guidata.cm_thresh = td{9,2};
-
-holoShow_guidata.cluster_material = td{10,2};
-holoShow_guidata.decon_profile = td{11,2};
-holoShow_guidata.mie_precision = td{12,2};
-holoShow_guidata.scat_ratio = td{13,2};
-holoShow_guidata.gpu = td{14,2};
+for i=1:size(td,1)
+    if strcmp(td{i,1},'')
+        continue
+    end
+%     disp(td(i,2))
+%     [td{i,1}, '=', td{i,2}]
+% ['holoShow_guidata.', td{i,1}, ' = ', num2str(td{i,2}), ';']
+    key = td{i,1};
+    arg = num2str(td{i,2});
+    if ischar(td{i,2})
+        eval(['holoShow_guidata.', key, ' = ''', arg,''';'])
+    else
+        eval(['holoShow_guidata.', key, ' = ', arg, ';'])
+    end
+end    
 
 holoShow_guidata.parameter = td;
 holoShow_guidata = refresh_hologram(holoShow_figure, eventdata, holoShow_guidata);

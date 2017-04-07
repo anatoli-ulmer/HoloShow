@@ -4,7 +4,7 @@ handles.phase = get(handles.phase_slider, 'Value');
 set(handles.phase_edit, 'String', num2str(round(handles.phase)));
 
 if get(handles.decon_checkbox,'value')
-    handles.hologram.deconvoluted = propagate(abs(handles.hologram.deconvoluted), handles.phase, handles.lambda, handles.detDistance);
+    handles.hologram.deconvoluted = propagate((handles.hologram.deconvoluted), handles.phase, handles.lambda, handles.detDistance);
     handles.recon = ift2(handles.hologram.deconvoluted);
 else
     handles.hologram.propagated = propagate(abs(handles.hologram.masked), handles.phase, handles.lambda, handles.detDistance);

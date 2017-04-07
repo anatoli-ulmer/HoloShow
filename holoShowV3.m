@@ -22,7 +22,7 @@ function varargout = holoShowV3(varargin)
 
 % Edit the above text to modify the response to help holoShow
 
-% Last Modified by GUIDE v2.5 13-Mar-2017 18:31:45
+% Last Modified by GUIDE v2.5 07-Apr-2017 13:44:50
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -74,22 +74,12 @@ handles.crop_factor = round(str2double(get(handles.crop_edit, 'String')));
 handles.IF_filtering = get(handles.intensity_filter_checkbox, 'Value');
 handles.IF_value = str2double(get(handles.intensity_filter_edit, 'String'));
 
-load('config_holoShow_FLASH2017.mat'); % To change standard values use 'src/config/create_config.m' to change config file
-for fn = fieldnames(config_file)'
-   handles.(fn{1}) = config_file.(fn{1});
-end
+handles = load_config(handles);
 
-set(handles.wavelength_edit, 'String', num2str(handles.lambda*1e9));
-set(handles.detDist_edit, 'String', num2str(handles.detDistance));
-set(handles.load_mask_checkbox, 'Value', handles.load_mask);
-set(handles.cm_checkbox, 'Value', handles.do_CM);
-set(handles.min_edit, 'String', num2str(handles.minScale));
-set(handles.max_edit, 'String', num2str(handles.maxScale));
-set(handles.highpass_checkbox, 'Value', handles.HPfiltering);
-set(handles.lowpass_checkbox, 'Value', handles.LPfiltering);
-set(handles.highpass_edit, 'String', num2str(handles.HPfrequency));
-set(handles.lowpass_edit, 'String', num2str(handles.LPfrequency));
-set(handles.clusterradius_edit, 'String', num2str(handles.clusterradius));
+% load('config_holoShow_FLASH2017.mat'); % To change standard values use 'src/config/create_config.m' to change config file
+% for fn = fieldnames(config_file)'
+%    handles.(fn{1}) = config_file.(fn{1});
+% end
 
 load('src/files/mask.mat');
 handles.origmask = (~mask).*drawnMask;
@@ -116,7 +106,7 @@ varargout{1} = handles.output;
 
 function load_pushbutton_Callback(hObject, eventdata, handles)
 set(handles.filenames_listbox, 'Value', 1); % set selection to first entry
-[handles.filenames, handles.pathname] = uigetfile('*.dat;*.mat;*.h5;*.cxi','select hologram files','E:\FLASH2017\data','MultiSelect','On'); % get list of files and path
+[handles.filenames, handles.pathname] = uigetfile('*.dat;*.mat;*.h5;*.cxi','select hologram files','E:\FLASH2017_Holography\preprocessed_1','MultiSelect','On'); % get list of files and path
 
 if iscell(handles.filenames)
     handles.first_file = handles.filenames{1};
@@ -477,13 +467,20 @@ guidata(hObject, handles);
 
 function powerSpec_pushbutton_Callback(hObject, eventdata, handles)
 reconcut = handles.recon(handles.rect(2):handles.rect(2)+handles.rect(4),handles.rect(1):handles.rect(1)+handles.rect(3));
-Freconcut = fftshift(abs(fft2(reconcut,1024,1024)));
-reconcutSpec = rscan(Freconcut,'dispflag',false);
-reconcutSpec = reconcutSpec(1:511).^2;
+Freconcut = fftshift(fft2(reconcut,1024,1024));
+reconcutSpec = rscan(Freconcut.^2,'dispflag',false);
+% reconcutSpec = reconcutSpec(50:511).^2;
 recon = handles.recon;
-Frecon = fftshift(abs(fft2(recon,1024,1024)));
-reconSpec = rscan(Frecon,'dispflag',false);
-reconSpec = reconSpec(1:511).^2;
+
+if get(handles.decon_checkbox, 'Value')
+    Frecon = abs(handles.hologram.deconvoluted);
+else
+    Frecon = abs(handles.hologram.propagated);
+end
+% Frecon = fftshift((fft2(fftshift(recon),1024,1024)));
+% reconSpec = rscan(Frecon,'dispflag',false);
+reconSpec = rscan(abs(Frecon).^2,'dispflag',false);
+% reconSpec = reconSpec(50:511).^2;
 
 % rat=reconSpec./reconcutSpec;
 
@@ -581,10 +578,10 @@ plot(handles.profile);
 guidata(hObject, handles);
 
 function makeGIF_checkbox_Callback(hObject, eventdata, handles)
-
+sprintf('removed feature!')
 
 function clusterradius_edit_Callback(hObject, eventdata, handles)
-handles.clusterradius=str2double(strrep(get(handles.clusterradius_edit,'String'),',','.'));
+handles.clusterradius = str2double(strrep(get(handles.clusterradius_edit,'String'),',','.'));
 fprintf('Cluster radius changed to %.1f nm \n', handles.clusterradius)
 guidata(hObject, handles);
 decon_checkbox_Callback(hObject, eventdata, handles)
@@ -841,6 +838,7 @@ set(handles.phase_slider, 'Value', handles.phase);
 handles = refreshImage(hObject, eventdata, handles);
 guidata(hObject, handles);
 
+
 function minusphase_pushbutton_Callback(hObject, eventdata, handles)
 handles.phase = str2double(get(handles.phase_edit, 'String')) - 100;
 set(handles.phase_edit, 'String', num2str(handles.phase));
@@ -849,12 +847,60 @@ handles = refreshImage(hObject, eventdata, handles);
 guidata(hObject, handles);
 
 
-% --- Executes on button press in parameter_window_pushbutton.
 function parameter_window_pushbutton_Callback(hObject, eventdata, handles)
 handles.parameter_figure = findobj('Tag','parameter_figure');
 if size(handles.parameter_figure,1) < 1
     handles.paramter_gui = parameter_window;
 else
     figure(handles.paramter_gui)
+end
+guidata(hObject, handles);
+
+
+function plus_radius_pushbutton_Callback(hObject, eventdata, handles)
+handles.clusterradius = str2double(get(handles.clusterradius_edit, 'String')) + 1;
+set(handles.clusterradius_edit, 'String', num2str(handles.clusterradius));
+clusterradius_edit_Callback(hObject, eventdata, handles)
+guidata(hObject, handles);
+
+
+function minus_radius_pushbutton_Callback(hObject, eventdata, handles)
+handles.clusterradius = str2double(get(handles.clusterradius_edit, 'String')) - 1;
+set(handles.clusterradius_edit, 'String', num2str(handles.clusterradius));
+clusterradius_edit_Callback(hObject, eventdata, handles)
+guidata(hObject, handles);
+
+
+function config_popupmenu_Callback(hObject, eventdata, handles)
+handles = load_config(handles);
+handles = refresh_hologram(hObject, eventdata, handles);
+handles = refreshImage(hObject, eventdata, handles);
+guidata(hObject, handles);
+
+
+function config_popupmenu_CreateFcn(hObject, eventdata, handles)
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+function command_edit_Callback(hObject, eventdata, handles)
+cm = get(handles.command_edit, 'String');
+eval(char(cm));
+guidata(hObject, handles);
+
+
+function command_edit_CreateFcn(hObject, eventdata, handles)
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+function command_window_pushbutton_Callback(hObject, eventdata, handles)
+handles.command_figure = findobj('Tag','command_figure');
+if size(handles.command_figure,1) < 1
+    handles.command_figure = command_window;
+else
+    figure(handles.command_figure)
 end
 guidata(hObject, handles);

@@ -12,9 +12,6 @@ end
 config_file.lambda = 5.3e-9;
 config_file.detDistance = 0.220;
 config_file.load_mask = false;
-config_file.img_offset = 0;
-config_file.slit = 0;
-config_file.shift = 0;
 config_file.xcenter = 0;
 config_file.ycenter = 0;
 config_file.adu_min = 10;
@@ -34,13 +31,13 @@ config_file.LPfrequency = 300;
 config_file.clusterradius = 30;
 
 config_file.img_offset = 0;
-config_file.slit = 27;
-config_file.shift = 3;
+config_file.add_slit = 27;
+config_file.add_shift = 3;
 config_file.xcenter = 5;
 config_file.ycenter = -40;
 config_file.adu_min = 15;
 config_file.adu_max = 15000;
-config_file.do_CM = 1;
+config_file.do_cm = 1;
 config_file.cm_thresh = 10;
 config_file.cluster_material = 'Kr';
 config_file.decon_profile = 'mie';

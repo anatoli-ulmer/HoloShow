@@ -15,8 +15,8 @@ IF_value = handles.IF_value;
 CM_thresh = handles.cm_thresh;
 rowsToshift = round(handles.ycenter);
 columnsToShift =  round(handles.xcenter);
-slit = handles.slit;
-shift = handles.shift;
+slit = handles.add_slit;
+shift = handles.add_shift;
 SMOOTH_FACTOR = 5; % smooth parameter for mask
 
 % Switches for what to show
@@ -77,7 +77,7 @@ if LP_filter
 end
 
 % COMMON MODE CORRECTION
-if handles.do_CM
+if handles.do_cm
     for m=1:1024
         dat = data(1:512-columnsToShift,m);
         dat = dat(mask(1:512-columnsToShift,m)>0);
