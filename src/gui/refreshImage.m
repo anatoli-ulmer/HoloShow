@@ -4,13 +4,12 @@ handles.phase = get(handles.phase_slider, 'Value');
 set(handles.phase_edit, 'String', num2str(round(handles.phase)));
 
 if get(handles.decon_checkbox,'value')
-    handles.hologram.deconvoluted = propagate((handles.hologram.deconvoluted), handles.phase, handles.lambda, handles.detDistance);
-    handles.recon = ift2(handles.hologram.deconvoluted);
+    handles.hologram.propagated = propagate(handles.hologram.deconvoluted, handles.phase, handles.lambda, handles.detDistance, handles.cut_center);
 else
-    handles.hologram.propagated = propagate(abs(handles.hologram.masked), handles.phase, handles.lambda, handles.detDistance);
-    handles.hologram.propagated = handles.hologram.propagated.*exp(1i*handles.phaseOffset);
-    handles.recon = ift2(handles.hologram.propagated);
+    handles.hologram.propagated = propagate(abs(handles.hologram.masked), handles.phase, handles.lambda, handles.detDistance, handles.cut_center);
 end
+%     handles.hologram.propagated = handles.hologram.propagated.*exp(1i*handles.phaseOffset);
+handles.recon = ift2(handles.hologram.propagated);
 
 figure(handles.reconstructionFigure);
 handles.reconI.CData = part_and_scale(handles.recon(handles.rect(2):handles.rect(2)+handles.rect(4),handles.rect(1):handles.rect(1)+handles.rect(3)),...

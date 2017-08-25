@@ -7,6 +7,8 @@ switch material
         n_matrix = dlmread('index_Kr.txt');
     case 'Ag'
         n_matrix = dlmread('index_Ag.txt');
+    case 'Su'
+        n_matrix = dlmread('index_Sucrose_C12H22O11.txt');
 end
 
 e = n_matrix(:,1);

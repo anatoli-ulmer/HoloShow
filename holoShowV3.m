@@ -22,7 +22,7 @@ function varargout = holoShowV3(varargin)
 
 % Edit the above text to modify the response to help holoShow
 
-% Last Modified by GUIDE v2.5 07-Apr-2017 13:44:50
+% Last Modified by GUIDE v2.5 24-Aug-2017 14:04:54
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -59,7 +59,9 @@ addpath(genpath(handles.sourcepath));
 % handles.cxi_identifier = '/entry_1/experiment_identifier';
 
 handles.cxi_entryname = '/entry_1/data_1/data';
+handles.cxi_maskname = '/entry_1/data_1/mask';
 handles.cxi_identifier = '/entry_1/event/bunch_id';
+handles.pathname = 'E:\FLASH2017_Holography\hummingbird';
 
 handles.output = hObject;
 handles.hologramFigure = figure('Name','hologram');
@@ -106,7 +108,7 @@ varargout{1} = handles.output;
 
 function load_pushbutton_Callback(hObject, eventdata, handles)
 set(handles.filenames_listbox, 'Value', 1); % set selection to first entry
-[handles.filenames, handles.pathname] = uigetfile('*.dat;*.mat;*.h5;*.cxi','select hologram files','E:\FLASH2017_Holography\preprocessed_1','MultiSelect','On'); % get list of files and path
+[handles.filenames, handles.pathname] = uigetfile('*.dat;*.mat;*.h5;*.cxi','select hologram files',handles.pathname,'MultiSelect','On'); % get list of files and path
 
 if iscell(handles.filenames)
     handles.first_file = handles.filenames{1};
@@ -310,7 +312,11 @@ guidata(hObject, handles);
 
 function find_phase_pushbutton_Callback(hObject, eventdata, handles)
 maxPhase = get(handles.phase_slider, 'Max');
-handles.phase = find_focus(handles.hologram.masked, handles.lambda, handles.detDistance, handles.rect, -maxPhase, maxPhase, 100, handles.af_method, true, handles.gpu, get(handles.makeGIF_checkbox,'value'), 1);
+if get(handles.decon_checkbox, 'Value')
+    handles.phase = find_focus(handles.hologram.deconvoluted, handles.lambda, handles.detDistance, handles.rect, -maxPhase, maxPhase, 100, handles.af_method, true, handles.gpu, get(handles.makeGIF_checkbox,'value'), 1);
+else
+    handles.phase = find_focus(handles.hologram.masked, handles.lambda, handles.detDistance, handles.rect, -maxPhase, maxPhase, 100, handles.af_method, true, handles.gpu, get(handles.makeGIF_checkbox,'value'), 1);
+end
 set(handles.phase_slider, 'Value', handles.phase);
 set(handles.phase_edit, 'String', num2str(round(handles.phase)));
 handles = refreshImage(hObject, eventdata, handles);
@@ -329,8 +335,7 @@ guidata(hObject, handles);
 
 
 function findCC_pushbutton_Callback(hObject, eventdata, handles)
-% rec = dlmread('C:\Users\Toli\Downloads\189004407 (1).dat')';
-handles.centroids = find_CC(handles.hologram.masked, 'show_img', true, 'min_dist', 100, 'int_thresh', 5, 'r_ignored', 75, 'crop_factor', handles.crop_factor);
+handles.centroids = find_CC(handles.hologram.masked, 'show_img', true, 'min_dist', 75, 'int_thresh', 5, 'r_ignored', 75, 'crop_factor', handles.crop_factor);
 if isequal(handles.centroids,[0,0])
     msgbox('no cross correlations found!')
 end
@@ -339,7 +344,7 @@ guidata(hObject, handles);
 
 function focusCC_pushbutton_Callback(hObject, eventdata, handles)
 fprintf('looking for cross correlations...')
-handles.centroids = find_CC(handles.hologram.masked, 'show_img', true, 'min_dist', 100, 'int_thresh', 5, 'r_ignored', 75, 'crop_factor', handles.crop_factor);
+handles.centroids = find_CC(handles.hologram.masked, 'show_img', true, 'min_dist', 75, 'int_thresh', 5, 'r_ignored', 75, 'crop_factor', handles.crop_factor);
 fprintf(' done!\n')
 if ~isequal(handles.centroids,[0,0])
     maxPhase = get(handles.phase_slider, 'Max');
@@ -355,6 +360,14 @@ if ~isequal(handles.centroids,[0,0])
             print(34555, fullfile(handles.sourcepath, 'analysis', [handles.currentFile(1:end-3), '_', num2str(handles.entrylist(handles.fileIndex)), '.png']),'-dpng');
         else
             print(34555, fullfile(handles.sourcepath, 'analysis', [handles.currentFile(1:end-3), '.png']),'-dpng');
+        end
+        figure(34556);
+        subplot(121); imagesc(log10(abs(handles.hologram.masked)),[1, 4.2]); axis square; colormap morgenstemning; colorbar;
+        subplot(122); imagesc(handles.reconI.CData); colorbar; axis square; colormap morgenstemning;
+        if strcmp(handles.ext, '.cxi') || strcmp(handles.ext, '.h5')
+            print(34556, fullfile(handles.sourcepath, 'analysis', [handles.currentFile(1:end-3), '_', num2str(handles.entrylist(handles.fileIndex)), 'H.png']),'-dpng');
+        else
+            print(34556, fullfile(handles.sourcepath, 'analysis', [handles.currentFile(1:end-3), '.png']),'-dpng');
         end
     end
     catch
@@ -412,55 +425,74 @@ x = 1:511;
 Q = handles.lambda*handles.detDistance/75e-6/2*1e9;
 temp = temp(x).^2;
 [handles.noiseSpec, handles.noiseSpec2D] = get_noise_spectrum(handles);
-SNR = (temp(x)./handles.noiseSpec(x));
-% figure(80); plot(x,log(temp(x)),x,log(handles.noiseSpec(x))); legend('signal','noise'); grid on;
-figure(81); subplot (211); semilogy(x, SNR, x, ones(1,511)*1, x, ones(1,511)*5); hold on;
-legend('SNR', 'SNR=1', 'SNR=5')
-xlim([0 511]); grid on;
-ax=gca;
-ax.XTick=0:50:500;
-ax.XTickLabel=round(Q./(0:50:500));
-xlabel('resolution in nm')
 
-minFreq=20;
-try
-    diff=SNR(1+minFreq:end)-ones(1,511-minFreq)*5;
-    idx = find(diff < eps, 1)+minFreq;
-    px3 = x(idx);
-    py3 = SNR(idx);
-    plot(px3, py3, 'ro', 'MarkerSize', 10);
-    title(sprintf('SNR = 5 at ~ %1.fnm', Q/px3));
-end
-hold off;
+% Point Spread Function
+% handles.mask
+
+% Signal-to-Noise Ratio
+    SNR = (temp(x)./handles.noiseSpec(x));
+    % figure(80); plot(x,log(temp(x)),x,log(handles.noiseSpec(x))); legend('signal','noise'); grid on;
+    figure(81); 
+    subplot(311); semilogy(x, SNR, x, ones(1,511)*1, x, ones(1,511)*5); hold on;
+    % S.x = Q./x;
+    % S.SNR = SNR;
+    % save('r0201_hit_18852_SNR.mat', 'S' ); 
+    legend('SNR', 'SNR=1', 'SNR=5')
+    xlim([0 511]); grid on;
+    ax=gca;
+    ax.XTick=0:50:500;
+    ax.XTickLabel=round(Q./(0:50:500));
+    xlabel('resolution in nm')
+
+    minFreq=20;
+    try
+        diff=SNR(1+minFreq:end)-ones(1,511-minFreq)*5;
+        idx = find(diff < eps, 1)+minFreq;
+        px3 = x(idx);
+        py3 = SNR(idx);
+        plot(px3, py3, 'ro', 'MarkerSize', 10);
+        title(sprintf('SNR = 5 at ~ %1.fnm', Q/px3));
+    end
+    hold off;
+
+% Contrast
+    C = (temp(x)-handles.noiseSpec(x))./temp(x);
+    subplot(312); plot(x, C);
+    xlim([0 511]); ylim([0,1]); grid on;
+    ax=gca;
+    ax.XTick=0:50:500;
+    ax.XTickLabel=round(Q./(0:50:500));
+
 
 handles.SNR2D=(Frecon./handles.noiseSpec2D).^2;
 
-superpixelsize = 2;
-[FRCout, twoSigma, halfBit] = FRC(recon(1:2*(floor(end/2)),1:2*(floor(end/2))),'realspace',true,'superpixelsize',superpixelsize,'ringwidth',2);
-x = 1:length(FRCout);
-subplot (212); plot(x, FRCout, x, twoSigma, x, halfBit, x, 0.5*ones(1,length(halfBit)));
-grid on;
-ax=gca;
-xticks=ax.XTick;
-ax.XTickLabel=round(Q*superpixelsize./(xticks/max(xticks(:))*511));
-title('Fourier Ring Correlation');
-legend('FRC', '2\sigma criterion', '1/2 bit criterion', '0.5 criterion')
-try
-    minFreq=3; hold on;
-    diff=FRCout(1+minFreq:end)-ones(1,length(FRCout)-minFreq)*0.5;
-    idx = find(diff < eps, 1)+minFreq-1;
-    px3 = x(idx);
-    py3 = FRCout(idx);
-    plot(px3, py3, 'ro', 'MarkerSize', 10);
-    title(sprintf('FRC resolution ~ %1.fnm', Q*superpixelsize/(px3/max(xticks(:))*511)));
-    xlabel('resolution in nm')
-    ylim([0, 1.05])
-end
-hold off;
+% Fourier Ring Correlation
+    superpixelsize = 2;
+    [FRCout, twoSigma, halfBit] = FRC(recon(1:2*(floor(end/2)),1:2*(floor(end/2))),'realspace',true,'superpixelsize',superpixelsize,'ringwidth',2);
+    x = 1:length(FRCout);
+    subplot (313); plot(x, FRCout, x, twoSigma, x, halfBit, x, 0.5*ones(1,length(halfBit)));
+    grid on;
+    ax=gca;
+    xticks=ax.XTick;
+    ax.XTickLabel=round(Q*superpixelsize./(xticks/max(xticks(:))*511));
+    title('Fourier Ring Correlation');
+    legend('FRC', '2\sigma criterion', '1/2 bit criterion', '0.5 criterion')
+    try
+        minFreq=3; hold on;
+        diff=FRCout(1+minFreq:end)-ones(1,length(FRCout)-minFreq)*0.5;
+        idx = find(diff < eps, 1)+minFreq-1;
+        px3 = x(idx);
+        py3 = FRCout(idx);
+        plot(px3, py3, 'ro', 'MarkerSize', 10);
+        title(sprintf('FRC resolution ~ %1.fnm', Q*superpixelsize/(px3/max(xticks(:))*511)));
+        xlabel('resolution in nm')
+        ylim([0, 1.05])
+    end
+    hold off;
 
-handles.FRC.data = FRCout;
-handles.FRC.twoSigma = twoSigma;
-handles.FRC.halfBit = halfBit;
+    handles.FRC.data = FRCout;
+    handles.FRC.twoSigma = twoSigma;
+    handles.FRC.halfBit = halfBit;
 
 guidata(hObject, handles);
 
@@ -566,7 +598,8 @@ end
 
 
 function knife_edge_pushbutton_Callback(hObject, eventdata, handles)
-axes(handles.reconAxes);
+% axes(handles.reconAxes);
+figure(23446)
 [xx,yy,handles.profile] = improfile;
 try
     delete(handles.profileLine);
@@ -595,8 +628,6 @@ end
 
 function decon_checkbox_Callback(hObject, eventdata, handles)
 fprintf('deconvoluting ...');
-handles.hologram.propagated = propagate(abs(handles.hologram.masked), handles.phase, handles.lambda, handles.detDistance);
-handles.hologram.propagated = handles.hologram.propagated.*exp(1i*handles.phaseOffset);
 
 if ~isfield(handles,'reconSpec')
     handles.reconSpec=1;
@@ -607,10 +638,12 @@ end
 
 if get(handles.decon_checkbox,'value')
     handles.hologram.deconvoluted = cluster_deconvolution(handles);
-    handles.recon = ift2(handles.hologram.deconvoluted);
+    handles.hologram.propagated = propagate(handles.hologram.deconvoluted, handles.phase, handles.lambda, handles.detDistance, handles.cut_center);
 else
-    handles.recon = ift2(handles.hologram.propagated);
+    handles.hologram.propagated = propagate(handles.hologram.masked, handles.phase, handles.lambda, handles.detDistance, handles.cut_center);
 end
+handles.recon = ift2(handles.hologram.propagated);
+% handles.hologram.propagated = handles.hologram.propagated.*exp(1i*handles.phaseOffset);
 
 figure(23446);
 
@@ -625,7 +658,7 @@ guidata(hObject, handles);
 
 function find_decon_pushbutton_Callback(hObject, eventdata, handles)
 fprintf('looking for cluster radius ...');
-handles.hologram.propagated = propagate(abs(handles.hologram.masked), handles.phase, handles.lambda, handles.detDistance);
+handles.hologram.propagated = propagate(abs(handles.hologram.masked), handles.phase, handles.lambda, handles.detDistance, handles.cut_center);
 handles.hologram.propagated = handles.hologram.propagated.*exp(1i*handles.phaseOffset);
 
 handles.clusterradius = find_decon(handles);
@@ -904,3 +937,33 @@ else
     figure(handles.command_figure)
 end
 guidata(hObject, handles);
+
+
+
+function cut_center_edit_Callback(hObject, eventdata, handles)
+if handles.cut_center_checkbox.Value
+    handles.cut_center = str2double(handles.cut_center_edit.String);
+else
+    handles.cut_center = 0;
+end
+handles = refresh_hologram(hObject, eventdata, handles);
+guidata(hObject, handles);
+
+
+function cut_center_edit_CreateFcn(hObject, eventdata, handles)
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+function cut_center_checkbox_Callback(hObject, eventdata, handles)
+if handles.cut_center_checkbox.Value
+    handles.cut_center = str2double(handles.cut_center_edit.String);
+else
+    handles.cut_center = 0;
+end
+handles = refresh_hologram(hObject, eventdata, handles);
+guidata(hObject, handles);
+
+
+

@@ -18,6 +18,7 @@ columnsToShift =  round(handles.xcenter);
 slit = handles.add_slit;
 shift = handles.add_shift;
 SMOOTH_FACTOR = 5; % smooth parameter for mask
+DO_SMOOTHING = true;
 
 % Switches for what to show
 showMASKS = false; % show used mask
@@ -27,6 +28,12 @@ showSMOOTH = false; % show smoothed mask and pattern
 %% LOAD DATA & MASK
 
 origdata = handles.hologram.orig;
+try
+    origdata = origdata  .* (~handles.hummingbird_mask);
+catch
+    warning('could not apply hummingbird mask')
+end
+
 origdata(abs(origdata)>=handles.adu_max) = 0; % set saturated pixels to 0
 if IF_filter
     origdata(abs(origdata)>IF_value) = 0;
@@ -112,9 +119,13 @@ end
 
 %% SMOOTH MASK
 
-blurred=imgaussfilt(mask,SMOOTH_FACTOR);
-newMask = 1-(blurred<0.99);
-newMask=imgaussfilt(newMask,SMOOTH_FACTOR);
+if DO_SMOOTHING
+    blurred=imgaussfilt(mask,SMOOTH_FACTOR);
+    newMask = 1-(blurred<0.99);
+    newMask=imgaussfilt(newMask,SMOOTH_FACTOR);
+else
+    newMask = mask;
+end
 
 newMask(~mask)=0;
 

@@ -4,7 +4,7 @@ function clusterradius = find_decon(handles)
 %%%%%%%%%%%% needs to be cleaned. look in cluster_deconvolution.m!" %%%%%%
 
 
-radii=(10:1:50)*1e-9;
+radii=(10:2:handles.clusterradius)*1e-9;
 x = 1:800;
 x = x*75e-6;
 theta = atan(x./(handles.detDistance));
@@ -46,6 +46,10 @@ for i=1:length(radii)
     
     holoI.CData = reconcut; 
     title(['cluster radius = ', num2str(radii(i)*1e9)]); drawnow;
+    
+    decon_plot = rscan(abs(deconvolved).^2, 'dispflag', false);
+    figure(860); clf
+    semilogy(abs(decon_plot)); hold on; semilogy(handles.reconSpec);
     
 end
 
