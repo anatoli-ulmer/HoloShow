@@ -23,4 +23,4 @@ To use a psana machine to analyze data please use nomachine:
   Use available machine with: 'ssh -Y machinename'.
   4. Start Matlab using: '/reg/common/package/matlab/R2016a/bin/matlab'.
 
-holoShow reads scattering image data files in ASCII format with ending '.dat' or Matlab files with ending '.mat'.
+holoShow reads scattering image data files in ASCII format with ending '.dat', Matlab files with ending '.mat' or HDF5 files with Hummingbird standart structure with ending '.cxi' or '.h5'.
