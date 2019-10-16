@@ -43,8 +43,16 @@ switch handles.ext
         end
     case '.h5'
         handles.hologram.orig = h5read(fullfile(handles.pathname, handles.first_file), handles.cxi_entryname, [1+handles.img_offset 1 handles.fileIndex],[1074 1024 1]);
-        handles.refined_mask = dlmread('FLASH2017_refined_mask.dat');
-        handles.hologram.orig = detector_offset_correction(handles.hologram.orig, handles.refined_mask, handles.detDistance);
+        content = cellstr(get(handles.config_popupmenu, 'String'));
+        experiment = content{get(handles.config_popupmenu, 'Value')};
+        if strcmp(experiment, 'FLASH2017')
+            handles.refined_mask = dlmread('FLASH2017_refined_mask.dat');
+            handles.hologram.orig = detector_offset_correction(handles.hologram.orig, handles.refined_mask, handles.detDistance);
+        end
+%         handles.hologram.orig = handles.hologram.orig(31:1024+30,1:1024);
+%         load('test_int_correction.mat');
+%         int_corr(isnan(int_corr))=0;
+%         handles.hologram.orig = handles.hologram.orig.*int_corr;
         
 %         try
 %             handles.hummingbird_mask = h5read(fullfile(handles.pathname, handles.first_file), handles.cxi_maskname, [1+handles.img_offset 1],[1024 1024]);
@@ -75,7 +83,8 @@ if ~ishandle(handles.hologramFigure)
 end
 figure(handles.hologramFigure);
 imagesc(log10(abs(handles.hologram.masked)),[0, 4.2]); axis square; colormap morgenstemning; colorbar;
-
+% testholo = handles.hologram.masked;
+% dlmwrite('testhologram.dat', testholo);
 %% CREATE RECONSTRUCTION FIGURE AND PLOT
 if ~ishandle(handles.reconstructionFigure)
     handles.reconstructionFigure = figure('Name','reconstruction');

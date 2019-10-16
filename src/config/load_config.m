@@ -20,3 +20,5 @@ set(handles.lowpass_checkbox, 'Value', handles.LPfiltering);
 set(handles.highpass_edit, 'String', num2str(handles.HPfrequency));
 set(handles.lowpass_edit, 'String', num2str(handles.LPfrequency));
 set(handles.clusterradius_edit, 'String', num2str(handles.clusterradius));
+set(handles.scattRatio_slider, 'Value', handles.scat_ratio);
+set(handles.scattRatio_edit, 'String', num2str(handles.scat_ratio));

@@ -1,4 +1,4 @@
-function hologram = detector_offset_correction(hologram, refined_mask, detDistance)
+function [hologram, mask_corrected] = detector_offset_correction(hologram, refined_mask, detDistance)
 
 %% shifting
     shift_ud = 5;
@@ -68,6 +68,7 @@ function hologram = detector_offset_correction(hologram, refined_mask, detDistan
     
     hologram_corrected = hologram_corrected.*~mask_corrected;
     hologram = hologram_corrected(31:1024+30,1:1024);
+    mask_corrected = mask_corrected(31:1024+30,1:1024);
     
     
     

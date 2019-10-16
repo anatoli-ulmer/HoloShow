@@ -17,7 +17,7 @@ if ~ishandle(handles.hologramFigure)
 end
 
 figure(handles.hologramFigure);
-imagesc(log10(abs(handles.hologram.masked)),[1, 4.2]); axis square; colormap morgenstemning; colorbar;
+handles.hologramI = imagesc(log10(abs(handles.hologram.masked)),[1, 4.2]); axis square; colormap morgenstemning; colorbar;
 
 if ~ishandle(handles.reconstructionFigure)
     handles.reconstructionFigure = figure('Name','reconstruction');

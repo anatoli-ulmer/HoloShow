@@ -18,7 +18,7 @@ columnsToShift =  round(handles.xcenter);
 slit = handles.add_slit;
 shift = handles.add_shift;
 SMOOTH_FACTOR = 5; % smooth parameter for mask
-DO_SMOOTHING = true;
+DO_SMOOTHING = handles.smoothMask;
 
 % Switches for what to show
 showMASKS = false; % show used mask

@@ -22,7 +22,7 @@ function varargout = holoShowV3(varargin)
 
 % Edit the above text to modify the response to help holoShow
 
-% Last Modified by GUIDE v2.5 24-Aug-2017 14:04:54
+% Last Modified by GUIDE v2.5 18-Jan-2018 11:38:19
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -75,6 +75,8 @@ handles.crop_factor = round(str2double(get(handles.crop_edit, 'String')));
 
 handles.IF_filtering = get(handles.intensity_filter_checkbox, 'Value');
 handles.IF_value = str2double(get(handles.intensity_filter_edit, 'String'));
+
+handles.smoothMask = handles.smoothMask_checkbox.Value;
 
 handles = load_config(handles);
 
@@ -379,17 +381,36 @@ guidata(hObject, handles);
 
 
 function wholeRun_pushbutton_Callback(hObject, eventdata, handles)
+handles.holoSumOrig = handles.hologram.orig;
+handles.holoSumMasked = handles.hologram.masked;
 while true
     if get(handles.abort_pushbutton, 'UserData')
         set(handles.abort_pushbutton, 'UserData', false)
+        figure(20001);
+        subplot(121); imasc(abs(handles.holoSumMasked));
+        subplot(122); imasc(abs(handles.holoSumMasked), 1, 4);
+        drawnow
         break
     end
     handles = select_hologram(hObject, eventdata, handles);
 %     handles.centroids = find_CC(handles.recon, 'show_img', true, 'min_dist', 100, 'int_thresh', 5, 'r_ignored', 75);
-    focusCC_pushbutton_Callback(hObject, eventdata, handles);
+%     focusCC_pushbutton_Callback(hObject, eventdata, handles);
+    handles.holoSumOrig = handles.holoSumOrig + handles.hologram.orig;
+    handles.holoSumMasked = handles.holoSumMasked + handles.hologram.masked;
     
+%     figure(20001);
+%     subplot(221); imasc(abs(handles.holoSumOrig));
+%     subplot(222); imasc(abs(handles.holoSumOrig), 1, 4);
+%     subplot(223); imasc(abs(handles.holoSumMasked));
+%     subplot(224); imasc(abs(handles.holoSumMasked), 1, 4);
+%     drawnow
+        
     handles.fileIndex = handles.fileIndex+1;
     if handles.fileIndex > handles.nbr_images
+        figure(20001);
+        subplot(121); imasc(abs(handles.holoSumMasked));
+        subplot(122); imasc(abs(handles.holoSumMasked), 1, 4);
+        drawnow
         return
     end
     set(handles.filenames_listbox, 'Value', handles.fileIndex);
@@ -397,7 +418,7 @@ end
 
 
 function center_pushbutton_Callback(hObject, eventdata, handles)
-[columnsToShift, rowsToshift, handles.phaseOffset] = find_center(handles.hologram.masked, handles.phase, handles.rect);
+[columnsToShift, rowsToshift, handles.phaseOffset] = find_center(handles);
 handles.xcenter = handles.xcenter + columnsToShift;
 handles.ycenter = handles.ycenter + rowsToshift;
 handles = refresh_hologram(hObject, eventdata, handles);
@@ -406,8 +427,8 @@ guidata(hObject, handles);
 
 function shifts_pushbutton_Callback(hObject, eventdata, handles)
 [shift, slit, handles.phaseOffset] = find_shift(handles.hologram.masked, handles.phase, handles.rect);
-handles.shift = handles.shift + shift;
-handles.slit = handles.slit + slit;
+handles.add_shift = handles.add_shift + shift;
+handles.add_slit = handles.add_slit + slit;
 handles = refresh_hologram(hObject, eventdata, handles);
 guidata(hObject, handles);
 
@@ -431,6 +452,7 @@ temp = temp(x).^2;
 
 % Signal-to-Noise Ratio
     SNR = (temp(x)./handles.noiseSpec(x));
+%     dlmwrite('1940_SNR.dat', SNR);
     % figure(80); plot(x,log(temp(x)),x,log(handles.noiseSpec(x))); legend('signal','noise'); grid on;
     figure(81); 
     subplot(311); semilogy(x, SNR, x, ones(1,511)*1, x, ones(1,511)*5); hold on;
@@ -457,11 +479,23 @@ temp = temp(x).^2;
 
 % Contrast
     C = (temp(x)-handles.noiseSpec(x))./temp(x);
-    subplot(312); plot(x, C);
+    subplot(312); cla;
+    plot(x, C); hold on;
+    plot(x, (1-0.153)*ones(size(x)));
     xlim([0 511]); ylim([0,1]); grid on;
     ax=gca;
     ax.XTick=0:50:500;
     ax.XTickLabel=round(Q./(0:50:500));
+    title('Contrast');
+    try
+        diff = C(1+minFreq:end)-ones(1,511-minFreq)*(1-0.153);
+        idx = find(diff < eps, 1)+minFreq;
+        px3 = x(idx);
+        py3 = C(idx);
+        plot(px3, py3, 'ro', 'MarkerSize', 10);
+        title(sprintf('Contrast = 0.847 at ~ %1.fnm', Q/px3));
+    end
+    hold off;
 
 
 handles.SNR2D=(Frecon./handles.noiseSpec2D).^2;
@@ -498,27 +532,70 @@ guidata(hObject, handles);
 
 
 function powerSpec_pushbutton_Callback(hObject, eventdata, handles)
-reconcut = handles.recon(handles.rect(2):handles.rect(2)+handles.rect(4),handles.rect(1):handles.rect(1)+handles.rect(3));
-Freconcut = fftshift(fft2(reconcut,1024,1024));
-reconcutSpec = rscan(Freconcut.^2,'dispflag',false);
-% reconcutSpec = reconcutSpec(50:511).^2;
-recon = handles.recon;
+R = ift2(handles.hologram.masked);
+Rprop = ift2(handles.hologram.propagated);
+M = handles.mask;
+
+radiusAK = 100;
+Rc = zeropad(R(512-radiusAK:512+radiusAK,512-radiusAK:512+radiusAK),1024);
+Ac = ft2(Rc);
+
+CCmask1 = zeros(1024); CCmask1(handles.rect(2):handles.rect(2)+handles.rect(4),handles.rect(1):handles.rect(1)+handles.rect(3)) = 1;
+reconcut = Rprop.*CCmask1;
+reconcut2 = conj(flipud(fliplr(reconcut))); %#ok<FLUDLR>
+Freconcut = ft2(reconcut);
+Freconcut2 = ft2(reconcut2);
+C12 = Freconcut.*Freconcut2;
+
+I1 = Ac/2 + sqrt(Ac.^2/4 - C12);
+I2 = Ac/2 - sqrt(Ac.^2/4 - C12);
+I1 = I1.*M;
+I2 = I2.*M;
+
+% figure(2);
+% subplot(131); imagesc(log10(abs(Rc)));  axis square; colormap morgenstemning; colorbar; crange(3);
+% subplot(132); imagesc(log10(abs(reconcut)));  axis square; colormap morgenstemning; colorbar; crange(3);
+% subplot(133); imagesc(log10(abs(reconcut2)));  axis square; colormap morgenstemning; colorbar; crange(3);
+
+colrange = [0,4.2];
+figure(400);
+subplot(221); imagesc(log10(abs(Ac)), colrange); axis square; colormap morgenstemning; colorbar; title('FT of Autocorrelation');
+subplot(222); imagesc(log10(abs(C12)), colrange); axis square; colormap morgenstemning; colorbar; title('FT of cross term C12');
+subplot(223); imagesc(log10(abs(I1)), colrange); axis square; colormap morgenstemning; colorbar; title('Reconstructed Amplitudes Sample');
+subplot(224); imagesc(log10(abs(I2)), colrange); axis square; colormap morgenstemning; colorbar; title('Reconstructed Amplitudes Reference');
+
+reconcutSpec = rscan(abs(Freconcut).^2,'dispflag',false);
+reconcutSpec2 = rscan(abs(Freconcut2).^2,'dispflag',false);
+% AcSpec = rscan(abs(Ac).^2,'dispflag',false);
+% C12Spec = rscan(abs(C12),'dispflag',false);
+I1Spec = rscan(abs(I1),'dispflag',false);
+I2Spec = rscan(abs(I2),'dispflag',false);
+
+% reconcutSpec = reconcutSpec/max(reconcutSpec(:));
+% reconcutSpec2 = reconcutSpec2/max(reconcutSpec2(:));
+% AcSpec = AcSpec/max(AcSpec(:));
+% C12Spec = C12Spec/max(C12Spec(:));
+% I1Spec = I1Spec/max(I1Spec(:));
+% I2Spec = I2Spec/max(I2Spec(:));
 
 if get(handles.decon_checkbox, 'Value')
     Frecon = abs(handles.hologram.deconvoluted);
 else
     Frecon = abs(handles.hologram.propagated);
 end
-% Frecon = fftshift((fft2(fftshift(recon),1024,1024)));
-% reconSpec = rscan(Frecon,'dispflag',false);
-reconSpec = rscan(abs(Frecon).^2,'dispflag',false);
-% reconSpec = reconSpec(50:511).^2;
 
-% rat=reconSpec./reconcutSpec;
+reconSpec = rscan(Frecon,'dispflag',false);
 
-figure(85);
-subplot(121); semilogy(50:length(reconSpec),reconSpec(50:end)); title('power spectrum full image')
-subplot(122); semilogy(50:length(reconcutSpec),reconcutSpec(50:end)); title('power spectrum chosen CC')
+figure(85); clf
+semilogy(50:length(reconSpec),reconSpec(50:end)); title('power spectrum'); hold on;
+semilogy(50:length(reconcutSpec),reconcutSpec(50:end)); hold on;
+semilogy(50:length(reconcutSpec),reconcutSpec2(50:end), '--');
+% semilogy(50:length(AcSpec),AcSpec(50:end), 'g');
+% semilogy(50:length(C12Spec),C12Spec(50:end), 'c:');
+semilogy(50:length(I1Spec),I1Spec(50:end)),'*';
+semilogy(50:length(I2Spec),I2Spec(50:end),'-.');
+legend('whole image', 'cross correlation','twin cross correlation','reconstructed pattern 1','reconstructed pattern 2');
+
 
 if get(handles.decon_checkbox, 'Value')
     handles.reconSpecDecon = reconSpec;
@@ -527,6 +604,7 @@ else
     handles.reconSpec = reconSpec;
     handles.reconcutSpec = reconcutSpec;
 end
+
 guidata(hObject, handles);
 
 
@@ -647,7 +725,7 @@ handles.recon = ift2(handles.hologram.propagated);
 
 figure(23446);
 
-imagesc(part_and_scale(handles.recon(handles.rect(2):handles.rect(2)+handles.rect(4),handles.rect(1):handles.rect(1)+handles.rect(3)),...
+imagesc(-part_and_scale(handles.recon(handles.rect(2):handles.rect(2)+handles.rect(4),handles.rect(1):handles.rect(1)+handles.rect(3)),...
     handles.logSwitch, handles.partSwitch));
 axis square;
 title(['cluster radius = ', num2str(handles.clusterradius)]); drawnow;
@@ -841,6 +919,7 @@ if crp_fct > 1 && handles.crop_image
 else
     handles.crop_factor = 1;
 end
+
 guidata(hObject, handles);
 
 
@@ -966,4 +1045,41 @@ handles = refresh_hologram(hObject, eventdata, handles);
 guidata(hObject, handles);
 
 
+function smoothMask_checkbox_Callback(hObject, eventdata, handles)
+handles.smoothMask = handles.smoothMask_checkbox.Value;
+handles = select_hologram(hObject, eventdata, handles);
+guidata(hObject, handles);
 
+
+function scattRatio_slider_Callback(hObject, eventdata, handles)
+handles.scat_ratio = handles.scattRatio_slider.Value;
+handles.scattRatio_edit.String = num2str(handles.scat_ratio);
+guidata(hObject, handles);
+decon_checkbox_Callback(hObject, eventdata, handles)
+
+
+function scattRatio_slider_CreateFcn(hObject, eventdata, handles)
+if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor',[.9 .9 .9]);
+end
+
+
+
+function scattRatio_edit_Callback(hObject, eventdata, handles)
+handles.scat_ratio = str2double(strrep(handles.scattRatio_edit.String, ',', '.'));
+handles.scattRatio_slider.Value = handles.scat_ratio;
+guidata(hObject, handles);
+decon_checkbox_Callback(hObject, eventdata, handles)
+
+
+% --- Executes during object creation, after setting all properties.
+function scattRatio_edit_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to scattRatio_edit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end

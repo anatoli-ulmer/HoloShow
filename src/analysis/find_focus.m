@@ -34,6 +34,7 @@ i=1;
 firstS = true;
 x = minPhase:ste:maxPhase;
 metric = zeros(length(x),1);
+focusplot = zeros(round(ROI(4))+1,steps);
 
 if strcmp(af_method, 'all')
     metric2 = zeros(length(x),1);
@@ -51,12 +52,14 @@ if gpuSwitch
         end
         tempProp = gpuArray(tempProp);
         hologram = gpuArray(hologram);
+        focusplot = gpuArray(focusplot);
     catch
         warning('Error in GPU allocation')
     end
 end
 
 tic
+
 for phase = minPhase:ste:maxPhase
     
     tempPhase=phase*tempProp;
@@ -64,6 +67,7 @@ for phase = minPhase:ste:maxPhase
     hologram = abs(hologram).*exp(1i*tempPhase);
     recon = ift2(hologram);
     reconcut = recon(ROI(2):ROI(2)+ROI(4),ROI(1):ROI(1)+ROI(3));
+    focusplot(:,i) = reconcut(:,round(ROI(4)/2));
     
     switch af_method
         case 'variance'
@@ -110,19 +114,21 @@ for phase = minPhase:ste:maxPhase
                 if ~exist(filename,'file')
                     imwrite(im,map,filename,'gif', 'Loopcount',inf);
                 end
-            end
+            end         
             
             focusFigure = figure(200);
             clf(focusFigure)
 %             focusFigure.Units = 'normalized';
 %             set(focusFigure,'Name','find focus','Position', [0.1,0.3,0.5,0.2]);
-            subplot(131); pl1 = imagesc(real(reconcut)); axis square; colormap gray; hold on; set(gca,'xtick',[]); set(gca,'ytick',[])
-            subplot(1,3,[2,3]); pl2 = plot(x(1:length(x)), metric(1:length(x))); grid on;
-            pbaspect([2 1 1])
+            subplot(231); pl1 = imagesc(real(reconcut)); axis square; colormap gray; hold on; set(gca,'xtick',[]); set(gca,'ytick',[])
+            subplot(2,3,[2,3]); pl2 = plot(x(1:length(x)), metric(1:length(x))); grid on;
+            subplot(2,3,[5,6]); pl3 = imagesc(abs(focusplot)); 
+            %pbaspect([2 1 1])
             firstS = false;
         else
             set(pl1, 'CData', real(gather(reconcut)));
             set(pl2, 'ydata', gather(metric(1:length(x))));
+            set(pl3, 'CData', abs(gather(focusplot)));
             if makeGIF
                 set(gifFrame, 'CData', real(reconcut));
             end
