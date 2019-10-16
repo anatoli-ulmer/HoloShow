@@ -1,12 +1,17 @@
-function set_colormap(str)
+function set_colormap(str, ax)
 
+if ~exist('ax','var')
+    ax = gca;
+end
 switch str
+    case 'r2b'
+        colormap(ax,r2b);
     case 'jet'
-        colormap jet;
+        colormap(ax,jet);
     case 'ms'
-        colormap morgenstemning;
+        colormap(ax,morgenstemning);
     case 'gray'
-        colormap gray;
+        colormap(ax,gray);
     case 'hsv'
-        colormap hsv;
+        colormap(ax,hsv);
 end

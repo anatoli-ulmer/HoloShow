@@ -11,19 +11,13 @@ end
 %     handles.hologram.propagated = handles.hologram.propagated.*exp(1i*handles.phaseOffset);
 handles.recon = ift2(handles.hologram.propagated);
 
-figure(handles.reconstructionFigure);
 handles.reconI.CData = part_and_scale(handles.recon(handles.rect(2):handles.rect(2)+handles.rect(4),handles.rect(1):handles.rect(1)+handles.rect(3)),...
                                             handles.logSwitch, handles.partSwitch);
-
+handles.reconColorbar.Label.String = sprintf('%s part in a.u.', handles.partSwitch);
 dx = handles.lambda/2/sin(atan(512*75e-6/handles.detDistance))*1e9;
 scalebar(handles.reconAxes, dx);
+axis(handles.reconAxes, 'image');
 
-
-if handles.square 
-    axis square
-else
-    axis tight
-end
 drawnow
 
 handles_return = handles;

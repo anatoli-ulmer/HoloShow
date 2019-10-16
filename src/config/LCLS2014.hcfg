@@ -4,7 +4,7 @@ handles.load_mask = true;
 
 handles.minScale = -2;
 handles.maxScale = 2;
-handles.colormap = 'ms';
+handles.colormap = 'gray';
 handles.centroids = [0,0];
 handles.phase = 0;
 handles.phaseOffset = 0;

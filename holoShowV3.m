@@ -25,6 +25,7 @@ function varargout = holoShowV3(varargin)
 % Last Modified by GUIDE v2.5 18-Jan-2018 11:38:19
 
 % Begin initialization code - DO NOT EDIT
+
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
     'gui_Singleton',  gui_Singleton, ...
@@ -61,11 +62,41 @@ addpath(genpath(handles.sourcepath));
 handles.cxi_entryname = '/entry_1/data_1/data';
 handles.cxi_maskname = '/entry_1/data_1/mask';
 handles.cxi_identifier = '/entry_1/event/bunch_id';
-handles.pathname = 'E:\FLASH2017_Holography\hummingbird';
+handles.pathname = fullfile(handles.sourcepath, 'testdata', 'LCLS_2014');
+
+fn = dir(fullfile(handles.pathname, '*'));
+fn = fn(3:end);
+handles.filenames = {fn.name};
+
+if iscell(handles.filenames)
+    handles.first_file = handles.filenames{1};
+else
+    handles.first_file = handles.filenames;
+end
+[~,~,handles.ext] = fileparts(handles.first_file);
+if strcmp(handles.ext, '.cxi') || strcmp(handles.ext, '.h5')
+    handles.entrylist = h5read(fullfile(handles.pathname, handles.first_file), handles.cxi_identifier);
+    set(handles.filenames_listbox, 'String', num2str(handles.entrylist));
+    handles.nbr_images = size(handles.entrylist,1);
+else
+    set(handles.filenames_listbox, 'String', handles.filenames);
+    handles.nbr_images = size(handles.filenames,2);
+end
 
 handles.output = hObject;
-handles.hologramFigure = figure('Name','hologram');
-handles.reconstructionFigure = figure('Name','reconstruction');
+
+handles.hologramFigure = findall(0,'tag', 'holoShow_holo');
+if isempty(handles.hologramFigure)
+    handles.hologramFigure = figure('Name','hologram', 'tag', 'holoShow_holo');
+end
+clf(handles.hologramFigure);
+handles.hologramAxes = axes('parent', handles.hologramFigure);
+handles.reconstructionFigure = findall(0,'tag', 'holoShow_recon');
+if isempty(handles.reconstructionFigure)
+    handles.reconstructionFigure = figure('Name','reconstruction', 'tag', 'holoShow_recon');
+end
+clf(handles.reconstructionFigure);
+handles.reconAxes = axes('parent', handles.reconstructionFigure);
 handles.square = get(handles.square_checkbox, 'Value');
 handles.logSwitch = get(handles.log_checkbox, 'Value');
 handles.partSwitch = get(get(handles.part_buttongroup, 'SelectedObject'), 'String');
@@ -77,10 +108,11 @@ handles.IF_filtering = get(handles.intensity_filter_checkbox, 'Value');
 handles.IF_value = str2double(get(handles.intensity_filter_edit, 'String'));
 
 handles.smoothMask = handles.smoothMask_checkbox.Value;
+handles.cut_center = 0;
 
 handles = load_config(handles);
 
-% load('config_holoShow_FLASH2017.mat'); % To change standard values use 'src/config/create_config.m' to change config file
+% load('config_holoShow_LCLS2014.mat'); % To change standard values use 'src/config/create_config.m' to change config file
 % for fn = fieldnames(config_file)'
 %    handles.(fn{1}) = config_file.(fn{1});
 % end
@@ -92,6 +124,7 @@ set(groot,'DefaultFigureColormap',gray)
 
 % Update handles structure
 guidata(hObject, handles);
+select_pushbutton_Callback(hObject,eventdata,handles);
 
 % UIWAIT makes holoShow wait for user response (see UIRESUME)
 % uiwait(handles.holoShow);
@@ -112,6 +145,9 @@ function load_pushbutton_Callback(hObject, eventdata, handles)
 set(handles.filenames_listbox, 'Value', 1); % set selection to first entry
 [handles.filenames, handles.pathname] = uigetfile('*.dat;*.mat;*.h5;*.cxi','select hologram files',handles.pathname,'MultiSelect','On'); % get list of files and path
 
+if handles.filenames == 0
+    return
+end
 if iscell(handles.filenames)
     handles.first_file = handles.filenames{1};
 else
@@ -151,12 +187,15 @@ guidata(hObject, handles);
 
 function holoShow_CloseRequestFcn(hObject, eventdata, handles)
 delete(hObject);
-close(handles.reconstructionFigure);
-close(handles.hologramFigure);
-
+try close(handles.reconstructionFigure);end
+try close(handles.hologramFigure);end 
 
 function chooseCC_pushbutton_Callback(hObject, eventdata, handles)
+colormap(handles.reconAxes, r2b);
 newrect = getrect(handles.reconAxes);
+colormap(handles.reconAxes, gray);
+% delete(handles.reconAxes.UserData.crosshairPlot)
+% set(handles.reconstructionFigure, 'WindowButtonMotionFcn', []);
 newrect = round(newrect);
 handles.square = get(handles.square_checkbox, 'Value');
 if handles.square
@@ -171,6 +210,7 @@ guidata(hObject, handles);
 
 
 function reset_pushbutton_Callback(hObject, eventdata, handles)
+figure(handles.reconstructionFigure)
 handles.rect(1) = 1;
 handles.rect(2) = 1;
 handles.rect(3) = size(handles.hologram.orig,1)-1;
@@ -251,7 +291,7 @@ function next_pushbutton_Callback(hObject, eventdata, handles)
 
 %     polmat = polar_matrix(image_bin(handles.hologram.orig.*handles.hardmask,2));
 %     figure(343);
-%     subplot(211); imagesc(log10(abs(polmat(:,15:128))), [0, 4.2]); colormap morgenstemning
+%     subplot(211); imagesc(log10(abs(polmat(:,15:128))), [0, 4.2]); colormap imorgen
 %     angularsum = sum(abs(polmat(:,15:128)'));
 %     angularsum(140:210) = [];
 %     angularsum(45:80) = [];
@@ -332,7 +372,8 @@ guidata(hObject, handles);
 
 function colormap_buttongroup_SelectionChangedFcn(hObject, eventdata, handles)
 handles.colormap = get(get(handles.colormap_buttongroup, 'SelectedObject'), 'String');
-handles = show_recon(hObject, eventdata, handles);
+set_colormap(handles.colormap, handles.reconAxes);
+% handles = show_recon(hObject, eventdata, handles);
 guidata(hObject, handles);
 
 
@@ -364,8 +405,8 @@ if ~isequal(handles.centroids,[0,0])
             print(34555, fullfile(handles.sourcepath, 'analysis', [handles.currentFile(1:end-3), '.png']),'-dpng');
         end
         figure(34556);
-        subplot(121); imagesc(log10(abs(handles.hologram.masked)),[1, 4.2]); axis square; colormap morgenstemning; colorbar;
-        subplot(122); imagesc(handles.reconI.CData); colorbar; axis square; colormap morgenstemning;
+        subplot(121); imagesc(log10(abs(handles.hologram.masked)),[1, 4.2]); axis square; colormap imorgen; colorbar;
+        subplot(122); imagesc(handles.reconI.CData); colorbar; axis square; colormap gray;
         if strcmp(handles.ext, '.cxi') || strcmp(handles.ext, '.h5')
             print(34556, fullfile(handles.sourcepath, 'analysis', [handles.currentFile(1:end-3), '_', num2str(handles.entrylist(handles.fileIndex)), 'H.png']),'-dpng');
         else
@@ -553,16 +594,16 @@ I1 = I1.*M;
 I2 = I2.*M;
 
 % figure(2);
-% subplot(131); imagesc(log10(abs(Rc)));  axis square; colormap morgenstemning; colorbar; crange(3);
-% subplot(132); imagesc(log10(abs(reconcut)));  axis square; colormap morgenstemning; colorbar; crange(3);
-% subplot(133); imagesc(log10(abs(reconcut2)));  axis square; colormap morgenstemning; colorbar; crange(3);
+% subplot(131); imagesc(log10(abs(Rc)));  axis square; colormap imorgen; colorbar; crange(3);
+% subplot(132); imagesc(log10(abs(reconcut)));  axis square; colormap imorgen; colorbar; crange(3);
+% subplot(133); imagesc(log10(abs(reconcut2)));  axis square; colormap imorgen; colorbar; crange(3);
 
 colrange = [0,4.2];
 figure(400);
-subplot(221); imagesc(log10(abs(Ac)), colrange); axis square; colormap morgenstemning; colorbar; title('FT of Autocorrelation');
-subplot(222); imagesc(log10(abs(C12)), colrange); axis square; colormap morgenstemning; colorbar; title('FT of cross term C12');
-subplot(223); imagesc(log10(abs(I1)), colrange); axis square; colormap morgenstemning; colorbar; title('Reconstructed Amplitudes Sample');
-subplot(224); imagesc(log10(abs(I2)), colrange); axis square; colormap morgenstemning; colorbar; title('Reconstructed Amplitudes Reference');
+subplot(221); imagesc(log10(abs(Ac)), colrange); axis square; colormap imorgen; colorbar; title('FT of Autocorrelation');
+subplot(222); imagesc(log10(abs(C12)), colrange); axis square; colormap imorgen; colorbar; title('FT of cross term C12');
+subplot(223); imagesc(log10(abs(I1)), colrange); axis square; colormap imorgen; colorbar; title('Reconstructed Amplitudes Sample');
+subplot(224); imagesc(log10(abs(I2)), colrange); axis square; colormap imorgen; colorbar; title('Reconstructed Amplitudes Reference');
 
 reconcutSpec = rscan(abs(Freconcut).^2,'dispflag',false);
 reconcutSpec2 = rscan(abs(Freconcut2).^2,'dispflag',false);

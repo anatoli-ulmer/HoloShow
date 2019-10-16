@@ -14,23 +14,32 @@ handles.hologram.masked = handles.hologram.masked.*exp(1i*handles.phaseOffset);
 
 if ~ishandle(handles.hologramFigure)
     handles.hologramFigure = figure('Name','hologram');
+    handles.hologramAxes = axes('parent', handles.hologramFigure);
 end
 
-figure(handles.hologramFigure);
-handles.hologramI = imagesc(log10(abs(handles.hologram.masked)),[1, 4.2]); axis square; colormap morgenstemning; colorbar;
+handles.hologramI = imagesc(log10(abs(handles.hologram.masked)), ...
+    'parent', handles.hologramAxes,[1, 4.2]);
+axis(handles.hologramAxes, 'image'); 
+colormap(handles.hologramAxes, imorgen); 
+handles.hologramColorbar = colorbar(handles.hologramAxes);
+handles.hologramColorbar.Label.String = 'log10(signal) in a.u.';
 
 if ~ishandle(handles.reconstructionFigure)
     handles.reconstructionFigure = figure('Name','reconstruction');
+    handles.reconAxes = axes('parent', handles.reconstructionFigure);
 end
 
-figure(handles.reconstructionFigure);
 handles.recon = fftshift(ifft2(fftshift(handles.hologram.masked)));
-handles.reconI = imagesc(part_and_scale(handles.recon(handles.rect(2):handles.rect(2)+handles.rect(4),handles.rect(1):handles.rect(1)+handles.rect(3)),...
-                                            handles.logSwitch, handles.partSwitch)); axis square; set_colormap(handles.colormap); colorbar;
-handles.reconAxes = gca;
+handles.reconI = imagesc(part_and_scale(...
+    handles.recon(handles.rect(2):handles.rect(2)+handles.rect(4),...
+    handles.rect(1):handles.rect(1)+handles.rect(3)),...
+    handles.logSwitch, handles.partSwitch),...
+    'parent', handles.reconAxes);
+axis(handles.reconAxes, 'image'); set_colormap(handles.colormap, handles.reconAxes);
+handles.reconColorbar = colorbar(handles.reconAxes);
+
 if get(handles.scale_checkbox, 'Value')
-    axes(handles.reconAxes);
-    caxis([handles.minScale, handles.maxScale]);
+    caxis(handles.reconAxes, [handles.minScale, handles.maxScale]);
 end
 
 handles = refreshImage(hObject, eventdata, handles);

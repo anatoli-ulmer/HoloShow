@@ -71,6 +71,9 @@ end
 statusbar;
 
 % figure(11); surf(sumrealmap3D(:,:));
-figure(33); imagesc(-varrange:delta:varrange,-varrange:delta:varrange,sumrealmap3D); axis square;
+figure(33); imagesc(-varrange:delta:varrange,-varrange:delta:varrange,sumrealmap3D); axis image;
+colormap gray; colorbar; title('finding center position metric'); drawnow
+xlabel('shift in x')
+ylabel('shift in y')
 
 fprintf(' done! \n');
