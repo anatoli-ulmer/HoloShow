@@ -4,7 +4,7 @@ Your favourite tool for analysing in-flight holography data manually is now avai
 author: Anatoli Ulmer,
 email: anatoli.ulmer@gmail.com
 
-NOT READY TO USE. NOT ALL FUNCTIONS NEEDED INCLUDED YET.
+BETA
 
 Tested for Matlab R2015a with following toolboxes:
 
