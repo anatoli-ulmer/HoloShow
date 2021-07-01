@@ -1,29 +1,75 @@
 # holoShow
-Your favourite tool for analysing in-flight holography data manually is now available on GitHub! :D
 
-author: Anatoli Ulmer,
+Data analysis toolbox for in-flight holography experiments, performed at the Free-Electron Laser facilities:
+  + LCLS (Linac Coherent Light Source) @ SLAC (Stanford Linear Accelerator Center)
+  + FLASH (Free-eLectron lASer Hamburg)
+
+
+## Table of contents
+* [General info](#general-info)
+* [Features](#features)
+* [Technologies](#technologies)
+* [Setup](#setup)
+* [Usage](#usage)
+* [License](#license)
+
+
+## General info
+
+Analysis of scattering patterns of samples and holographic references, illuminated by a single FEL (Free-Electron Laser) pulse [Gorkhover et al., 2018](https://doi.org/10.1038/s41566-018-0110-y). Data recorded on pnCCD scattering detectors [citation] with clusters as holographic references.
+
+version: 3.0
+year: 2021
+author: Anatoli Ulmer
 email: anatoli.ulmer@gmail.com
 
-BETA
 
-Tested for Matlab R2015a with following toolboxes:
+## Features
+  + pnCCD detector corrections
+  + holographic reconstruction
+  + refocusing (manual and automated)
+  + signal-to-noise estimation
+  + Wiener devonvolution fitler
+  + graphical interface
 
-1. Image Processing Toolbox
-2. Parallel Computing Toolbox
 
-Decreasing amount of needed toolboxes is in progress.
+## Technologies
+Project is created with:
+* MATLAB 2015b or later
+* Image Processing Toolbox
+* Parallel Computing Toolbox
 
-To start run 'holoShowV3.m' in Matlab. 
 
-To use a psana machine to analyze data please use nomachine:
-  1. Get nomachine - https://www.nomachine.com/
-  2. Login into psnxana - howto: https://confluence.slac.stanford.edu/display/PCDS/Remote+Visualization
-  3. ssh to a psana machine with available Matlab licence. 
-  Get list of available licences using: '/reg/common/package/scripts/matlic'.
-  Use available machine with: 'ssh -Y machinename'.
-  4. Start Matlab using: '/reg/common/package/matlab/R2016a/bin/matlab'.
+## Setup
+Optionally can be used on Maxwell (Desy) or psana (SLAC) remotely:
 
-holoShow reads scattering image data files in ASCII format with ending '.dat', Matlab files with ending '.mat' or HDF5 files with Hummingbird standart structure with ending '.cxi' or '.h5'.
+To use MATLAB on **Maxwell** please use FastX2:
+  1. Get [FastX2](https://confluence.desy.de/pages/viewpage.action?pageId=200538889) from inside the Desy Network.
+  2. Connect to `max-display.desy.de` with your desy credentials using FastX.
+  3a. Start a XFCE session and start the terminal OR
+  3b. Or start a xterm session and run the desired MATLAB version with `matlab20XXx` in the terminal (e.g. `matlab2021a`).
+  4. run the desired MATLAB version with `matlab20XXx` in the terminal (e.g. `matlab2021a`).
+
+To use a **psana** mashine please use [nomachine](https://www.nomachine.com/):
+  1. Get 
+  2. Login into psnxana - [HOWTO](https://confluence.slac.stanford.edu/display/PCDS/Remote+Visualization)
+  3. ssh to a psana machine with available MATLAB licence. 
+  Get list of available licences using: `/reg/common/package/scripts/matlic`.
+  Use available machine with: `ssh -Y machinename`.
+  4. Start MATLAB using: `/reg/common/package/matlab/R2016a/bin/matlab`.
+
+```
+$ cd ../lorem
+$ npm install
+$ npm start
+```
+
+
+## Usage
+
+Run 'holoShowV3.m' `holoShowV3.m` in MATLAB. 
+
+holoShow reads scattering image data files in ASCII format with ending '.dat', MATLAB files with ending '.mat' or HDF5 files with Hummingbird standard structure with ending '.cxi' or '.h5'.
 
 
 INSTRUCTIONS:
@@ -38,5 +84,9 @@ INSTRUCTIONS:
 
 5.) The focused reconstruction will still have artifacts due to unprecise centering of the hologram and position estimateion of the two detector halves. To correct for these artifacts you can use the 'find center' and 'find shifts' buttons.
 
-
 Now you should have a low resolution reconstruction. Keep in mind that depending on the focal length, information can be shiften between real and imaginary space. After all, what we reconstruct is just the exit wave of the particle. To further refine the reconsruction it is possible to make a deconvolution.
+
+
+## License
+
+TO DO
