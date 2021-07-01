@@ -2,7 +2,7 @@
 
 Data analysis toolbox for in-flight holography experiments, performed at the Free-Electron Laser facilities:
   + LCLS (Linac Coherent Light Source) @ SLAC (Stanford Linear Accelerator Center)
-  + FLASH (Free-eLectron lASer Hamburg)
+  + FLASH (Free-Electron Laser Hamburg)
 
 
 ## Table of contents
