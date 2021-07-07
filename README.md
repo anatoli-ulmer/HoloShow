@@ -18,10 +18,10 @@ Data analysis toolbox for in-flight holography experiments, performed at the Fre
 
 Analysis of scattering patterns of samples and holographic references, illuminated by a single FEL (Free-Electron Laser) pulse [Gorkhover et al., 2018](https://doi.org/10.1038/s41566-018-0110-y). Data recorded on pnCCD scattering detectors [citation] with clusters as holographic references.
 
-version: 3.0
-year: 2021
-author: Anatoli Ulmer
-email: anatoli.ulmer@gmail.com
+version: 3.0  
+year: 2021  
+author: Anatoli Ulmer  
+email: anatoli.ulmer@gmail.com  
 
 
 ## Features
