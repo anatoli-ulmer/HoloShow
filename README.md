@@ -16,9 +16,9 @@ Data analysis toolbox for in-flight holography experiments, performed at the Fre
 
 ## General info
 
-Analysis of scattering patterns of samples and holographic references, illuminated by a single FEL (Free-Electron Laser) pulse [Gorkhover et al., 2018](https://doi.org/10.1038/s41566-018-0110-y). Data recorded on pnCCD scattering detectors [citation] with clusters as holographic references.
+Analysis of scattering patterns of samples and holographic references, illuminated by a single FEL (Free-Electron Laser) pulse [[Gorkhover et al., 2018](https://doi.org/10.1038/s41566-018-0110-y)]. Data recorded on pnCCD scattering detectors with clusters as holographic references.
 
-version: 3.0  
+version: 4.0  
 year: 2021  
 author: Anatoli Ulmer  
 email: anatoli.ulmer@gmail.com  
@@ -29,13 +29,13 @@ email: anatoli.ulmer@gmail.com
   + holographic reconstruction
   + refocusing (manual and automated)
   + signal-to-noise estimation
-  + Wiener devonvolution fitler
+  + Wiener devonvolution filter
   + graphical interface
 
 
 ## Technologies
 Project is created with:
-* MATLAB 2015b or later
+* MATLAB 2020a or later
 * Image Processing Toolbox
 * Parallel Computing Toolbox
 
