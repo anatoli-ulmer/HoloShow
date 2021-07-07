@@ -1,4 +1,4 @@
-function outp = zeropad(inp, dims)
+function outp = zeropadding(inp, dims)
 
 if nargin < 2
     dims = [1024, 1024];

@@ -1,7 +1,8 @@
-function handles = load_config(handles)
+function load_config(app, event)
 
-content = cellstr(get(handles.config_popupmenu, 'String'));
-experiment = content{get(handles.config_popupmenu, 'Value')};
+% content = cellstr(get(app.config_popupmenu, 'String'));
+% experiment = content{get(app.config_popupmenu, 'Value')};
+experiment = app.config_popupmenu.Value;
 
 fileID = fopen([experiment, '.hcfg']);
 while ~feof(fileID)
@@ -9,16 +10,16 @@ while ~feof(fileID)
 end
 fclose(fileID);
 
-set(handles.wavelength_edit, 'String', num2str(handles.lambda*1e9));
-set(handles.detDist_edit, 'String', num2str(handles.detDistance));
-set(handles.load_mask_checkbox, 'Value', handles.load_mask);
-set(handles.cm_checkbox, 'Value', handles.do_cm);
-set(handles.min_edit, 'String', num2str(handles.minScale));
-set(handles.max_edit, 'String', num2str(handles.maxScale));
-set(handles.highpass_checkbox, 'Value', handles.HPfiltering);
-set(handles.lowpass_checkbox, 'Value', handles.LPfiltering);
-set(handles.highpass_edit, 'String', num2str(handles.HPfrequency));
-set(handles.lowpass_edit, 'String', num2str(handles.LPfrequency));
-set(handles.clusterradius_edit, 'String', num2str(handles.clusterradius));
-set(handles.scattRatio_slider, 'Value', handles.scat_ratio);
-set(handles.scattRatio_edit, 'String', num2str(handles.scat_ratio));
+set(app.wavelength_edit, 'Value', num2str(app.handles.lambda*1e9));
+set(app.detDist_edit, 'Value', num2str(app.handles.detDistance));
+set(app.load_mask_checkbox, 'Value', app.handles.load_mask);
+set(app.cm_checkbox, 'Value', app.handles.do_cm);
+set(app.min_edit, 'Value', num2str(app.handles.minScale));
+set(app.max_edit, 'Value', num2str(app.handles.maxScale));
+set(app.highpass_checkbox, 'Value', app.handles.HPfiltering);
+set(app.lowpass_checkbox, 'Value', app.handles.LPfiltering);
+set(app.highpass_edit, 'Value', num2str(app.handles.HPfrequency));
+set(app.lowpass_edit, 'Value', num2str(app.handles.LPfrequency));
+set(app.clusterradius_edit, 'Value', num2str(app.handles.clusterradius));
+set(app.scattRatio_slider, 'Value', app.handles.scat_ratio);
+set(app.scattRatio_edit, 'Value', num2str(app.handles.scat_ratio));

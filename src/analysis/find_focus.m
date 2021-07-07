@@ -37,9 +37,9 @@ metric = zeros(length(x),1);
 focusplot = zeros(round(ROI(4))+1,steps);
 
 if strcmp(af_method, 'all')
-    metric2 = zeros(length(x),1);
-    metric3 = zeros(length(x),1);
-    metric4 = zeros(length(x),1);
+    metric2 = nan(length(x),1);
+    metric3 = nan(length(x),1);
+    metric4 = nan(length(x),1);
 end
 
 if gpuSwitch

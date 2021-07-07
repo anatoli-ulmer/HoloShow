@@ -1,16 +1,16 @@
-function [noiseSpec, noiseSpec2D] = get_noise_spectrum(handles)
+function [noiseSpec, noiseSpec2D] = get_noise_spectrum(app)
 figure;
-imagesc(log10(abs(handles.recon))); 
+imagesc(log10(abs(app.handles.recon))); 
 colormap jet; axis square;
-handles.noiseRect = getrect(gca);
+app.handles.noiseRect = getrect(gca);
 close(gcf);
-handles.noiseRect = round(handles.noiseRect);
-handles.square = get(handles.square_checkbox, 'Value');
-if handles.square
-    handles.noiseRect(3) = max([handles.noiseRect(3),handles.noiseRect(4)]);
-    handles.noiseRect(4) = max([handles.noiseRect(3),handles.noiseRect(4)]);
+app.handles.noiseRect = round(app.handles.noiseRect);
+app.handles.square = get(app.square_checkbox, 'Value');
+if app.handles.square
+    app.handles.noiseRect(3) = max([app.handles.noiseRect(3),app.handles.noiseRect(4)]);
+    app.handles.noiseRect(4) = max([app.handles.noiseRect(3),app.handles.noiseRect(4)]);
 end
-noise = handles.recon(handles.noiseRect(2):handles.noiseRect(2)+handles.noiseRect(4),handles.noiseRect(1):handles.noiseRect(1)+handles.noiseRect(3));
+noise = app.handles.recon(app.handles.noiseRect(2):app.handles.noiseRect(2)+app.handles.noiseRect(4),app.handles.noiseRect(1):app.handles.noiseRect(1)+app.handles.noiseRect(3));
 noise = noise/length(noise);
 noiseSpec2D = fftshift(abs(fft2(noise,1024,1024)));
 temp = rscan(noiseSpec2D,'dispflag',false);

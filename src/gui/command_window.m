@@ -6,7 +6,7 @@ function varargout = command_window(varargin)
 %      H = COMMAND_WINDOW returns the handle to a new COMMAND_WINDOW or the handle to
 %      the existing singleton*.
 %
-%      COMMAND_WINDOW('CALLBACK',hObject,eventData,handles,...) calls the local
+%      COMMAND_WINDOW('CALLBACK',hObject,eventData,app.handles,...) calls the local
 %      function named CALLBACK in COMMAND_WINDOW.M with the given input arguments.
 %
 %      COMMAND_WINDOW('Property','Value',...) creates a new COMMAND_WINDOW or raises the
@@ -45,52 +45,52 @@ end
 
 
 % --- Executes just before command_window is made visible.
-function command_window_OpeningFcn(hObject, eventdata, handles, varargin)
+function command_window_OpeningFcn(app, event, varargin)
 % This function has no output args, see OutputFcn.
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
+% app.handles    structure with app.handles and user data (see GUIDATA)
 % varargin   command line arguments to command_window (see VARARGIN)
 
 % Choose default command line output for command_window
-handles.output = hObject;
-% set(handles.cm_hist_edit, 'enable','inactive');
-handles.cm_hist_text = {};
-handles.ind = 1;
-% Update handles structure
-guidata(hObject, handles);
+app.handles.output = hObject;
+% set(app.handles.cm_hist_edit, 'enable','inactive');
+app.handles.cm_hist_text = {};
+app.handles.ind = 1;
+% Update app.handles structure
+guidata(hObject, app.handles);
 
 % UIWAIT makes command_window wait for user response (see UIRESUME)
-% uiwait(handles.command_figure);
+% uiwait(app.handles.command_figure);
 
 
 % --- Outputs from this function are returned to the command line.
-function varargout = command_window_OutputFcn(hObject, eventdata, handles) 
+function varargout = command_window_OutputFcn(app, event) 
 % varargout  cell array for returning output args (see VARARGOUT);
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
+% app.handles    structure with app.handles and user data (see GUIDATA)
 
-% Get default command line output from handles structure
-varargout{1} = handles.output;
+% Get default command line output from app.handles structure
+varargout{1} = app.handles.output;
 
 
-function cm_edit_Callback(hObject, eventdata, handles)
+function cm_edit_Callback(app, event)
 holoShow_figure = findobj('Tag','holoShow');
 holoShow_guidata = guidata(holoShow_figure);
-cm = char(get(handles.cm_edit, 'String'));
-cm = strrep(cm, 'handles', 'holoShow_guidata');
+cm = char(get(app.handles.cm_edit, 'String'));
+cm = strrep(cm, 'app.handles', 'holoShow_guidata');
 eval(cm);
 guidata(holoShow_figure, holoShow_guidata);
 
-handles.cm_hist_text{handles.ind} = handles.cm_edit.String;
-handles.cm_hist_edit.String = sprintf('%s\n', handles.cm_hist_text{:});
-handles.cm_edit.String = '';
-handles.ind = handles.ind+1;
-guidata(hObject, handles);
+app.handles.cm_hist_text{app.handles.ind} = app.handles.cm_edit.String;
+app.handles.cm_hist_edit.String = sprintf('%s\n', app.handles.cm_hist_text{:});
+app.handles.cm_edit.String = '';
+app.handles.ind = app.handles.ind+1;
+guidata(hObject, app.handles);
 
 
-function cm_edit_CreateFcn(hObject, eventdata, handles)
+function cm_edit_CreateFcn(app, event)
 
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');

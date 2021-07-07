@@ -6,7 +6,7 @@ function varargout = parameter_window(varargin)
 %      H = PARAMETER_WINDOW returns the handle to a new PARAMETER_WINDOW or the handle to
 %      the existing singleton*.
 %
-%      PARAMETER_WINDOW('CALLBACK',hObject,eventData,handles,...) calls the local
+%      PARAMETER_WINDOW('CALLBACK',hObject,eventData,app.handles,...) calls the local
 %      function named CALLBACK in PARAMETER_WINDOW.M with the given input arguments.
 %
 %      PARAMETER_WINDOW('Property','Value',...) creates a new PARAMETER_WINDOW or raises the
@@ -45,18 +45,18 @@ end
 
 
 % --- Executes just before parameter_window is made visible.
-function parameter_window_OpeningFcn(hObject, eventdata, handles, varargin)
+function parameter_window_OpeningFcn(app, event, varargin)
 % This function has no output args, see OutputFcn.
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
+% app.handles    structure with app.handles and user data (see GUIDATA)
 % varargin   command line arguments to parameter_window (see VARARGIN)
 
 % Choose default command line output for parameter_window
-handles.output = hObject;
+app.handles.output = hObject;
 holoShow_figure = findobj('Tag','holoShow');
 holoShow_guidata = guidata(holoShow_figure);
-handles.parameter = {...
+app.handles.parameter = {...
     'img_offset', holoShow_guidata.img_offset;...%1
     'add_slit', holoShow_guidata.add_slit;...%2
     'add_shift', holoShow_guidata.add_shift;...%3
@@ -73,22 +73,22 @@ handles.parameter = {...
     'gpu', holoShow_guidata.gpu;...
     };
 
-set(handles.parameter_uitable, 'data', handles.parameter);
+set(app.handles.parameter_uitable, 'data', app.handles.parameter);
 
-% Update handles structure
-guidata(hObject, handles);
+% Update app.handles structure
+guidata(hObject, app.handles);
 
 % UIWAIT makes parameter_window wait for user response (see UIRESUME)
-% uiwait(handles.parameter_figure);
+% uiwait(app.handles.parameter_figure);
 
 
-function varargout = parameter_window_OutputFcn(hObject, eventdata, handles) 
-varargout{1} = handles.output;
+function varargout = parameter_window_OutputFcn(app, event) 
+varargout{1} = app.handles.output;
 
 
 % --- Executes when entered data in editable cell(s) in parameter_uitable.
-function parameter_uitable_CellEditCallback(hObject, eventdata, handles)
-td = get(handles.parameter_uitable, 'data');
+function parameter_uitable_CellEditCallback(app, event)
+td = get(app.handles.parameter_uitable, 'data');
 holoShow_figure = findobj('Tag','holoShow');
 holoShow_guidata = guidata(holoShow_figure);
 % 

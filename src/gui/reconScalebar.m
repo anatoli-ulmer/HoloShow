@@ -1,4 +1,4 @@
-function scalebar(ax, nmPerPixel)
+function reconScalebar(ax, nmPerPixel)
 
 sarray = [10, 20, 50, 100, 200, 500, 1000];
 N = floor(ax.XLim(2));

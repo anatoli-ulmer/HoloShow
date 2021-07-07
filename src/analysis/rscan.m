@@ -1,4 +1,4 @@
-function [rdat,xcoord,ycoord] = rscan(M0,varargin),
+function [rdat,xcoord,ycoord] = rscan(M0,varargin)
 
 % RDAT = RSCAN(M0,VARARGIN)
 % Get radial scan of a matrix using the following procedure:
@@ -26,7 +26,7 @@ function [rdat,xcoord,ycoord] = rscan(M0,varargin),
 % [ref] http://www.mathworks.com/matlabcentral/fileexchange/
 %       loadFile.do?objectId=2876&objectType=file
 
-if nargin < 1,
+if nargin < 1
     disp('This is a Demo');
     M0 = 'demo';
 end
@@ -72,7 +72,7 @@ yxz = size(M0);
 Rbnd = floor(min(yxz)/2)-1;
 if Rlim > Rbnd, Rlim = Rbnd; end
 
-for nRho = 1:rstep:floor(Rlim),
+for nRho = 1:rstep:floor(Rlim)
     NOP = round(2*pi*nRho);
     THETA=linspace(0,2*pi,NOP);
     RHO=ones(1,NOP)*round(nRho);
@@ -128,7 +128,7 @@ end
 xcoord = dat(1,:);
 ycoord = dat(2,:);
 
-if dispFlag,
+if dispFlag
     h2 = figure(101); clf; hold on;
     %     set(h2,'position',[10 100 400 300]);
     subplot(121); plot(rdat);axis tight; title('linear');

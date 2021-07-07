@@ -1,4 +1,4 @@
-function save_holoShow(handles)
+function save_holoShow(app, event)
 
 foldername='Analysis';
 if ~exist(foldername,'dir')
@@ -6,33 +6,33 @@ if ~exist(foldername,'dir')
 end
 
 try
-    data.filename = handles.filenames{handles.fileIndex};
-    data.h = handles.hologram;
-    data.m = handles.mask;
-    data.hardmask = handles.hardmask;
+    data.filename = app.handles.filenames{app.handles.fileIndex};
+    data.h = app.handles.hologram;
+    data.m = app.handles.mask;
+    data.hardmask = app.handles.hardmask;
 
-    data.rect = handles.rect;
-    data.centroids = handles.centroids;
-    data.phase = handles.phase;
-    data.phaseOffset = handles.phaseOffset;
+    data.rect = app.handles.rect;
+    data.centroids = app.handles.centroids;
+    data.phase = app.handles.phase;
+    data.phaseOffset = app.handles.phaseOffset;
 
-    data.reconSpec = handles.reconSpec;
-    data.reconSpecDecon = handles.reconSpecDecon;
-    data.reconcutSpec = handles.reconcutSpec;
-    data.reconcutSpecDecon = handles.reconcutSpecDecon;
-    data.noiseRect = handles.noiseRect;
-    data.noiseSpec = handles.noiseSpec;
-    data.noiseSpec2D = handles.noiseSpec2D;
-    data.SNR2D = handles.SNR2D;
+    data.reconSpec = app.handles.reconSpec;
+    data.reconSpecDecon = app.handles.reconSpecDecon;
+    data.reconcutSpec = app.handles.reconcutSpec;
+    data.reconcutSpecDecon = app.handles.reconcutSpecDecon;
+    data.noiseRect = app.handles.noiseRect;
+    data.noiseSpec = app.handles.noiseSpec;
+    data.noiseSpec2D = app.handles.noiseSpec2D;
+    data.SNR2D = app.handles.SNR2D;
     
-    data.clusterradius = handles.clusterradius;
-    data.wiener = handles.wiener; 
+    data.clusterradius = app.handles.clusterradius;
+    data.wiener = app.handles.wiener; 
     
-    data.FRC.data = handles.FRC.data;
-    data.FRC.twoSigma = handles.FRC.twoSigma;
-    data.FRC.halfBit = handles.FRC.halfBit; %#ok<STRNU>    
+    data.FRC.data = app.handles.FRC.data;
+    data.FRC.twoSigma = app.handles.FRC.twoSigma;
+    data.FRC.halfBit = app.handles.FRC.halfBit; %#ok<STRNU>    
 catch ME
     warning(['Did not save! reason: ' ME.message])
 end    
 
-save(fullfile(foldername,[handles.currentFile(1:end-3),'mat']),'-struct','data')
+save(fullfile(foldername,[app.handles.currentFile(1:end-3),'mat']),'-struct','data')

@@ -1,23 +1,27 @@
-function handles_return = refreshImage(~, ~, handles)
+function refreshImage(app, event)
 
-handles.phase = get(handles.phase_slider, 'Value');
-set(handles.phase_edit, 'String', num2str(round(handles.phase)));
+% app.handles.phase = app.phase_slider.Value;
+% app.phase_edit.Value = num2str(round(app.handles.phase));
+% set(app.handles.phase_edit, 'String', num2str(round(app.handles.phase)));
 
-if get(handles.decon_checkbox,'value')
-    handles.hologram.propagated = propagate(handles.hologram.deconvoluted, handles.phase, handles.lambda, handles.detDistance, handles.cut_center);
-else
-    handles.hologram.propagated = propagate(abs(handles.hologram.masked), handles.phase, handles.lambda, handles.detDistance, handles.cut_center);
-end
-%     handles.hologram.propagated = handles.hologram.propagated.*exp(1i*handles.phaseOffset);
-handles.recon = ift2(handles.hologram.propagated);
+% if app.decon_checkbox.Value
+%     app.handles.hologram.propagated = propagate(app.handles.hologram.deconvoluted, app.handles.phase, app.handles.lambda, app.handles.detDistance, app.handles.cut_center);
+% else
+%     app.handles.hologram.propagated = propagate(abs(app.handles.hologram.masked), app.handles.phase, app.handles.lambda, app.handles.detDistance, app.handles.cut_center);
+% end
+% %     app.handles.hologram.propagated = app.handles.hologram.propagated.*exp(1i*app.handles.phaseOffset);
+% app.handles.recon = ift2(app.handles.hologram.propagated);
+% 
+% app.handles.reconI.CData = part_and_scale(app.handles.recon(app.handles.rect(2):app.handles.rect(2)+app.handles.rect(4),app.handles.rect(1):app.handles.rect(1)+app.handles.rect(3)),...
+%                                             app.handles.logSwitch, app.handles.partSwitch);
 
-handles.reconI.CData = part_and_scale(handles.recon(handles.rect(2):handles.rect(2)+handles.rect(4),handles.rect(1):handles.rect(1)+handles.rect(3)),...
-                                            handles.logSwitch, handles.partSwitch);
-handles.reconColorbar.Label.String = sprintf('%s part in a.u.', handles.partSwitch);
-dx = handles.lambda/2/sin(atan(512*75e-6/handles.detDistance))*1e9;
-scalebar(handles.reconAxes, dx);
-axis(handles.reconAxes, 'image');
+refreshPhase(app, event)
+
+app.handles.reconColorbar.Label.String = sprintf('%s part in a.u.', app.handles.partSwitch);
+dx = app.handles.lambda*1e9/2/sin(atan(512*75e-6/app.handles.detDistance));
+reconScalebar(app.handles.reconAxes, dx);
+axis(app.handles.reconAxes, 'image');
+
+
 
 drawnow
-
-handles_return = handles;

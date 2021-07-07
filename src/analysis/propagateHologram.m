@@ -1,4 +1,4 @@
-function hologram = propagate(hologram, prop_l, lambda, CCD_S_DIST, cut_center, meth)
+function hologram = propagateHologram(hologram, prop_l, lambda, CCD_S_DIST, cut_center, meth)
 
 % SYNTAX:
 %   hologram = propagate(hologram, prop_l)

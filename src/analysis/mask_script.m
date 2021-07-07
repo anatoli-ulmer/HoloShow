@@ -1,4 +1,4 @@
-function handles_return = mask_script(handles)
+function mask_script(app, event)
 % Performs:
 %     - common mode correction
 %     - shifting of scattering pattern and mask
@@ -6,19 +6,19 @@ function handles_return = mask_script(handles)
 
 %% PARAMETERS
 
-HP_filter = handles.HPfiltering;
-HP_radius = handles.HPfrequency;
-LP_filter = handles.LPfiltering;
-LP_radius = handles.LPfrequency;
-IF_filter = handles.IF_filtering;
-IF_value = handles.IF_value;
-CM_thresh = handles.cm_thresh;
-rowsToshift = round(handles.ycenter);
-columnsToShift =  round(handles.xcenter);
-slit = handles.add_slit;
-shift = handles.add_shift;
+HP_filter = app.handles.HPfiltering;
+HP_radius = app.handles.HPfrequency;
+LP_filter = app.handles.LPfiltering;
+LP_radius = app.handles.LPfrequency;
+IF_filter = app.handles.IF_filtering;
+IF_value = app.handles.IF_value;
+CM_thresh = app.handles.cm_thresh;
+rowsToshift = round(app.handles.ycenter);
+columnsToShift =  round(app.handles.xcenter);
+slit = app.handles.add_slit;
+shift = app.handles.add_shift;
 SMOOTH_FACTOR = 5; % smooth parameter for mask
-DO_SMOOTHING = handles.smoothMask;
+DO_SMOOTHING = app.handles.smoothMask;
 
 % Switches for what to show
 showMASKS = false; % show used mask
@@ -27,21 +27,22 @@ showSMOOTH = false; % show smoothed mask and pattern
 
 %% LOAD DATA & MASK
 
-origdata = handles.hologram.orig;
+origdata = app.handles.hologram.orig;
 try
-    origdata = origdata  .* (~handles.hummingbird_mask);
+    origdata = origdata  .* (~app.handles.hummingbird_mask);
 catch
-    warning('could not apply hummingbird mask')
+%     warning('could not apply hummingbird mask')
+    fprintf('No applicable hummingbird mask.\n')
 end
 
-origdata(abs(origdata)>=handles.adu_max) = 0; % set saturated pixels to 0
+origdata(abs(origdata)>=app.handles.adu_max) = 0; % set saturated pixels to 0
 if IF_filter
     origdata(abs(origdata)>IF_value) = 0;
 end
 origdata(origdata<-50)=0;
 
-if handles.load_mask
-    mask = handles.origmask;
+if app.handles.load_mask
+    mask = app.handles.origmask;
 else
     mask = ones(1024);
 end
@@ -50,7 +51,7 @@ mask(origdata==0)=0;
 
 if showMASKS
     figure(11) %#ok<*UNRCH>
-    subplot(131); imagesc(handles.origmask);axis square;
+    subplot(131); imagesc(app.handles.origmask);axis square;
     subplot(132); imagesc(mask);axis square;
     subplot(133); imagesc(origdata);axis square;
 end
@@ -84,7 +85,7 @@ if LP_filter
 end
 
 % COMMON MODE CORRECTION
-if handles.do_cm
+if app.handles.do_cm
     for m=1:1024
         dat = data(1:512-columnsToShift,m);
         dat = dat(mask(1:512-columnsToShift,m)>0);
@@ -103,7 +104,7 @@ if handles.do_cm
         end
     end
 end
-data(data<handles.adu_min)=0;
+data(data<app.handles.adu_min)=0;
 
 if showCM
     figure(22);
@@ -135,8 +136,6 @@ if showSMOOTH
     subplot(122); imagesc(log(abs(newMask)),[0 8]); axis square; colormap fire; colorbar;
 end
 
-handles.mask = newMask;
-handles.hardmask = mask;
-handles.hologram.masked = data.*newMask;
-
-handles_return = handles;
+app.handles.mask = newMask;
+app.handles.hardmask = mask;
+app.handles.hologram.masked = data.*newMask;

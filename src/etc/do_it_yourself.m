@@ -1,33 +1,33 @@
-function do_it_yourself(hObject, eventdata, handles, ...
+function do_it_yourself(app, ...
     find_phase_pushbutton_Callback, ...
     center_pushbutton_Callback, ...
     powerSpec_pushbutton_Callback, ...
     find_decon_pushbutton_Callback, ...
     SNR_pushbutton_Callback)
 
-set(handles.filenames_listbox, 'Value', handles.fileIndex);
+set(app.handles.filenames_listbox, 'Value', app.handles.fileIndex);
 try
-    handles = select_hologram(hObject, eventdata, handles);
+    app.handles = select_hologram(app, event;
 catch
     return
 end
 CCsize=70;
-handles.centroids = find_CC(handles.recon);
-nbrCCs = size(handles.centroids,1);
-maxPhase = get(handles.phase_slider, 'Max');
+app.handles.centroids = find_CC(app.handles.recon);
+nbrCCs = size(app.handles.centroids,1);
+maxPhase = get(app.handles.phase_slider, 'Max');
 
-for CC=1:1%size(handles.centroids,1)
-    handles.rect(1) = round(handles.centroids(CC,1)-CCsize/2);
-    handles.rect(2) = round(handles.centroids(CC,2)-CCsize/2);
-    handles.rect(3) = CCsize;
-    handles.rect(4) = CCsize;
-    handles = show_recon(hObject, eventdata, handles);
-    find_phase_pushbutton_Callback(hObject, eventdata, handles);
-    center_pushbutton_Callback(hObject, eventdata, handles);
-    center_pushbutton_Callback(hObject, eventdata, handles);
-    powerSpec_pushbutton_Callback(hObject, eventdata, handles);
-    SNR_pushbutton_Callback(hObject, eventdata, handles);
-    find_decon_pushbutton_Callback(hObject, eventdata, handles);
+for CC=1:1%size(app.handles.centroids,1)
+    app.handles.rect(1) = round(app.handles.centroids(CC,1)-CCsize/2);
+    app.handles.rect(2) = round(app.handles.centroids(CC,2)-CCsize/2);
+    app.handles.rect(3) = CCsize;
+    app.handles.rect(4) = CCsize;
+    app.handles = show_recon(app, event);
+    find_phase_pushbutton_Callback(app, event);
+    center_pushbutton_Callback(app, event);
+    center_pushbutton_Callback(app, event);
+    powerSpec_pushbutton_Callback(app, event);
+    SNR_pushbutton_Callback(app, event);
+    find_decon_pushbutton_Callback(app, event);
     pause
-    save_image_pushbutton_Callback(hObject, eventdata, handles);
+    save_image_pushbutton_Callback(app, event);
 end

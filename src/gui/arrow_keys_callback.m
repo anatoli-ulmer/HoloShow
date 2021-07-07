@@ -1,21 +1,23 @@
-function handles = arrow_keys_callback(hObject, eventdata, handles)
+function arrow_keys_callback(app, event)
 
-switch eventdata.Key
+switch event.Key
     case 'leftarrow'
-        handles.fileIndex = handles.fileIndex-1;
-        if handles.fileIndex < 1
+        app.handles.fileIndex = app.handles.fileIndex-1;
+        if app.handles.fileIndex < 1
             return
         end
     case 'rightarrow'
-        handles.fileIndex = handles.fileIndex+1;
-        if handles.fileIndex > size(handles.filenames,2)
+        app.handles.fileIndex = app.handles.fileIndex+1;
+        if app.handles.fileIndex > size(app.handles.filenames,2)
             return
         end
     case 'return'
-        handles.fileIndex = get(handles.filenames_listbox, 'Value');
+%         app.handles.fileIndex = get(app.filenames_listbox, 'Value');
+        [~, app.handles.fileIndex] = ismember(app.filenames_listbox.Value, app.filenames_listbox.Items);
     otherwise
         return
 end
 
-set(handles.filenames_listbox, 'Value', handles.fileIndex)
-handles = select_hologram(hObject, eventdata, handles);
+% set(app.filenames_listbox, 'Value', app.handles.fileIndex)
+app.filenames_listbox.Value = app.filenames_listbox.Items{app.handles.fileIndex};
+select_hologram(app, event);

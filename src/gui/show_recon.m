@@ -1,16 +1,14 @@
-function handles_return = show_recon(hObject, eventdata, handles)
+function show_recon(app, event)
 
-handles.reconI = imagesc(log(abs(handles.recon(...
-    handles.rect(2):handles.rect(2)+handles.rect(4),...
-    handles.rect(1):handles.rect(1)+handles.rect(3)))),...
-    'parent', handles.reconAxes); 
-set_colormap(handles.colormap, handles.reconAxes);
-handles.reconColorbar = colorbar(handles.reconAxes);
-axis(handles.reconAxes, 'image')
-if get(handles.scale_checkbox, 'Value')
-    caxis(handles.reconAxes, [handles.minScale, handles.maxScale]);
+app.handles.reconI = imagesc(log(abs(app.handles.recon(...
+    app.handles.rect(2):app.handles.rect(2)+app.handles.rect(4),...
+    app.handles.rect(1):app.handles.rect(1)+app.handles.rect(3)))),...
+    'parent', app.handles.reconAxes); 
+set_colormap(app.handles.colormap, app.handles.reconAxes);
+app.handles.reconColorbar = colorbar(app.handles.reconAxes);
+axis(app.handles.reconAxes, 'image')
+if get(app.scale_checkbox, 'Value')
+    caxis(app.handles.reconAxes, [app.handles.minScale, app.handles.maxScale]);
 end
 
-handles = refreshImage(hObject, eventdata, handles);
-
-handles_return = handles;
+refreshImage(app, event);
