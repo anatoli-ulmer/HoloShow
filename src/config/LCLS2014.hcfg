@@ -1,6 +1,7 @@
 app.handles.lambda = 1.055e-9;
 app.handles.detDistance = 0.735;
 app.handles.load_mask = true;
+app.handles.rotatePNCCD = false;
 
 app.handles.minScale = -2;
 app.handles.maxScale = 2;

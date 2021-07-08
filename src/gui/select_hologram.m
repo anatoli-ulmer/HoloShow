@@ -2,12 +2,12 @@ function select_hologram(app, event)
 
 % TO DO: CHANGE HARD CODED MASKING
 
-% if iscell(app.handles.filenames)
-%     app.handles.currentFile = app.handles.filenames{app.handles.fileIndex};
-% else
-%     app.handles.currentFile = app.handles.filenames;
-% end
-app.handles.currentFile = app.filenames_listbox.Value;
+if iscell(app.handles.filenames)
+    app.handles.currentFile = app.handles.filenames{app.handles.fileIndex};
+else
+    app.handles.currentFile = app.handles.filenames;
+end
+% app.handles.currentFile = app.filenames_listbox.Value;
 
 %% READ RAW DATA
 fprintf('loading file: %s ...', app.handles.currentFile);
@@ -44,8 +44,7 @@ switch app.handles.ext
         end
     case '.h5'
         app.handles.hologram.orig = h5read(fullfile(app.handles.pathname, app.handles.first_file), app.handles.cxi_entryname, [1+app.handles.img_offset 1 app.handles.fileIndex],[1074 1024 1]);
-        content = cellstr(get(app.config_popupmenu, 'String'));
-        experiment = content{get(app.config_popupmenu, 'Value')};
+        experiment = app.config_popupmenu.Value;
         if strcmp(experiment, 'FLASH2017')
             app.handles.refined_mask = dlmread('FLASH2017_refined_mask.dat');
             app.handles.hologram.orig = detector_offset_correction(app.handles.hologram.orig, app.handles.refined_mask, app.handles.detDistance);
@@ -61,6 +60,10 @@ switch app.handles.ext
 %             warning('no hummingbird mask found!')
 %             app.handles.hummingbird_mask = ones(size(app.handles.hologram.orig));
 %         end
+end
+
+if app.handles.rotatePNCCD
+    app.handles.hologram.orig = rot90(app.handles.hologram.orig);
 end
 
 fprintf(' done! \n');

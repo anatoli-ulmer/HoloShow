@@ -2,6 +2,7 @@ function refresh_hologram(app, event)
 % Needed if parameter values like center of hologram or shift/slit have
 % changed to update hologram and mask. Updates data and plots.
 
+
 if app.handles.image_correction
     mask_script(app, event);
 else
