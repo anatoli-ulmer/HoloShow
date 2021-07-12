@@ -50,10 +50,11 @@ end
 mask(origdata==0)=0;
 
 if showMASKS
-    figure(11) %#ok<*UNRCH>
-    subplot(131); imagesc(app.handles.origmask);axis square;
-    subplot(132); imagesc(mask);axis square;
-    subplot(133); imagesc(origdata);axis square;
+    figure(113345) %#ok<*UNRCH>
+    set(gcf, 'Name', 'showMASKS');
+    subplot(131); imagesc(app.handles.origmask); axis image;
+    subplot(132); imagesc(mask); axis image;
+    subplot(133); imagesc(origdata); axis image; set(gca, 'ColorScale', 'log');
 end
 
 %% CENTER PICTURE & COMMON MODE
@@ -63,10 +64,10 @@ data = simpleshift(origdata,[rowsToshift columnsToShift]);
 mask = simpleshift(mask,[rowsToshift columnsToShift]);
 
 % SECOND CORRECTION THROUH VARIANCE AND DETECTOR SHIFTS
-sdata = simpleshift(data,[slit, shift]);
-smask = simpleshift(mask,[slit, shift]);
-data(513+slit:end,:) = sdata(513+slit:end,:);
-mask(513+slit:end,:) = smask(513+slit:end,:);
+dataShifted = simpleshift(data,[slit, shift]);
+maskShifted = simpleshift(mask,[slit, shift]);
+data(513+slit:end,:) = dataShifted(513+slit:end,:);
+mask(513+slit:end,:) = maskShifted(513+slit:end,:);
 mask(513:513+slit,:) = 0;
 data(isnan(data)) = 0;
 
@@ -107,15 +108,31 @@ end
 data(data<app.handles.adu_min)=0;
 
 if showCM
-    figure(22);
-    subplot(221);
-    imagesc(log(abs(origdata)).*mask,[0 8]);
-    colormap(fire);
-    axis square;
-    subplot(222);
-    imagesc(mask);
-    axis square;
-    subplot(223); imagesc(log(abs(data)).*mask,[0 max(log(abs(data(:))))]); axis square;
+    cmFig = figure(22); clf;
+    set(cmFig, 'Name', 'showCM');
+    cmTL = tiledlayout(cmFig, 'flow');
+    
+    cmAx(1) = nexttile(cmTL);
+    imagesc(cmAx(1), origdata.*mask);
+    colormap(hesperia);
+    axis(cmAx(1), 'image');
+    cmAx(1).ColorScale = 'log';
+    cmAx(1).CLim(1) = 0.1;
+    
+    cmAx(2) = nexttile(cmTL);
+    imagesc(cmAx(2), mask); 
+    axis(cmAx(2), 'image');
+%     cmAx(2).ColorScale = 'log';
+%     cmAx(3).CLim(1) = 0.1;
+%     subplot(222);
+%     imagesc(mask);
+%     axis image;
+    
+    cmAx(3) = nexttile(cmTL);
+    imagesc(cmAx(3), data.*mask); 
+    axis(cmAx(3), 'image');
+    cmAx(3).ColorScale = 'log';
+    cmAx(3).CLim(1) = 0.1;
 end
 
 %% SMOOTH MASK
@@ -131,7 +148,8 @@ end
 newMask(~mask)=0;
 
 if showSMOOTH
-    figure(3);
+    figure(35234); clf;
+    set(gcf, 'Name', 'showSMOOTH');
     subplot(121); imagesc(newMask); axis square; colormap gray; colorbar;
     subplot(122); imagesc(log(abs(newMask)),[0 8]); axis square; colormap fire; colorbar;
 end

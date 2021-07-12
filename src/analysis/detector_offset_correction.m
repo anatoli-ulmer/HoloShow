@@ -4,7 +4,8 @@ function [hologram, mask_corrected] = detector_offset_correction(hologram, refin
     shift_ud = 5;
     shift_lr = 5;
 
-    hologram_shifted = zeros(1074 + shift_ud + 1, 1024 + shift_lr);
+    hologramSize = size(hologram);
+    hologram_shifted = zeros(hologramSize(1) + shift_ud + 1, hologramSize(2) + shift_lr);
     hologram_shifted(1:512, 1:512) = hologram(1:512, 1:512);
     hologram_shifted(end-1-511:end-1, 1+shift_lr:512+shift_lr) = hologram(end-511:end, 1:512);
     hologram_shifted(2:513, 513:1024) = hologram(1:512, end-511:end);

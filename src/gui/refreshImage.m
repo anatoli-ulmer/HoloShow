@@ -1,4 +1,4 @@
-function refreshImage(app, event)
+ function refreshImage(app, event)
 
 % app.handles.phase = app.phase_slider.Value;
 % app.phase_edit.Value = num2str(round(app.handles.phase));
@@ -13,15 +13,19 @@ function refreshImage(app, event)
 % app.handles.recon = ift2(app.handles.hologram.propagated);
 % 
 % app.handles.reconI.CData = part_and_scale(app.handles.recon(app.handles.rect(2):app.handles.rect(2)+app.handles.rect(4),app.handles.rect(1):app.handles.rect(1)+app.handles.rect(3)),...
-%                                             app.handles.logSwitch, app.handles.partSwitch);
+%                                            app.handles.partSwitch);
 
 refreshPhase(app, event)
 
+reconScalebar(app, app.handles.reconAxes)
+
 app.handles.reconColorbar.Label.String = sprintf('%s part in a.u.', app.handles.partSwitch);
-dx = app.handles.lambda*1e9/2/sin(atan(512*75e-6/app.handles.detDistance));
-reconScalebar(app.handles.reconAxes, dx);
-axis(app.handles.reconAxes, 'image');
 
-
+if app.log_checkbox.Value
+%     output = log10(abs(output));
+    app.handles.reconAxes.ColorScale = 'log';
+else
+    app.handles.reconAxes.ColorScale = 'linear';
+end
 
 drawnow

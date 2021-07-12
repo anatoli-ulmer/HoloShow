@@ -14,7 +14,7 @@ q = 4*pi/app.handles.lambda*sin(theta/2);
 xx(xx==0)=1;
 
 figure(23446); holoI = imagesc(part_and_scale(app.handles.recon(app.handles.rect(2):app.handles.rect(2)+app.handles.rect(4),app.handles.rect(1):app.handles.rect(1)+app.handles.rect(3)),...
-        app.handles.logSwitch, app.handles.partSwitch)); axis square; drawnow;
+        app.handles.partSwitch)); axis square; drawnow;
     
 for i=1:length(radii)
     R = radii(i);
@@ -42,7 +42,7 @@ for i=1:length(radii)
     app.handles.recon = fftshift(ifft2(fftshift(deconvolved)));
     
     reconcut = part_and_scale(app.handles.recon(app.handles.rect(2):app.handles.rect(2)+app.handles.rect(4),app.handles.rect(1):app.handles.rect(1)+app.handles.rect(3)),...
-        app.handles.logSwitch, app.handles.partSwitch);
+        app.handles.partSwitch);
     
     holoI.CData = reconcut; 
     title(['cluster radius = ', num2str(radii(i)*1e9)]); drawnow;

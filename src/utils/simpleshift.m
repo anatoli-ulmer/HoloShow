@@ -15,4 +15,5 @@ elseif cts <0
     A(:,end+cts:end) = 0;
 end
 
-A(:,1:cts) = 0;
+% A(:,1:cts) = 0;
+% A(1:rts,:) = 0;

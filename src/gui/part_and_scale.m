@@ -1,4 +1,4 @@
-function output = part_and_scale (data, logSwitch, partSwitch)
+function output = part_and_scale (data, partSwitch)
 
 switch partSwitch
     case 'real'
@@ -11,6 +11,3 @@ switch partSwitch
         output = angle(data);
 end
 
-if logSwitch
-    output = log10(abs(output));
-end

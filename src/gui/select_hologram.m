@@ -70,9 +70,9 @@ fprintf(' done! \n');
 
 %% APPLY IMAGE CORRECTION
 if app.handles.image_correction
-    fprintf('applying image correction ...');
+    fprintf('applying image correction ...\n');
     mask_script(app, event);
-    fprintf(' done! \n');
+    fprintf('\t\t\t done!\n');
 else
     app.handles.hologram.masked = app.handles.hologram.orig;
     app.handles.mask = ones(1024);
@@ -82,31 +82,44 @@ end
 app.handles.hologram.masked = app.handles.hologram.masked.*exp(1i*app.handles.phaseOffset);
 
 %% CREATE HOLOGRAM FIGURE AND PLOT
-if ~ishandle(app.handles.hologramFigure)
+if ~isgraphics(app.handles.hologramFigure)
     app.handles.hologramFigure = figure('Name','hologram');
     app.handles.hologramAxes = axes('parent', app.handles.hologramFigure);
+%     app.handles.hologramI = imagesc(log10(abs(app.handles.hologram.masked)), 'parent', app.handles.hologramAxes); 
+    app.handles.hologramI = imagesc(app.handles.hologramAxes, app.handles.hologram.masked); 
+    axis(app.handles.hologramAxes, 'image');
+    app.handles.hologramAxes.ColorScale = 'log';
+    % app.handles.hologramAxes.CLim(1) = 1;
+    colormap(app.handles.hologramAxes, ihesperia); 
+    app.handles.hologramColorbar = colorbar(app.handles.hologramAxes);
+    app.handles.hologramColorbar.Label.String = 'signal in a.u.';
+else
+    app.handles.hologramI.CData = app.handles.hologram.masked;
 end
 
-app.handles.hologramI = imagesc(log10(abs(app.handles.hologram.masked)), 'parent', app.handles.hologramAxes); 
 app.handles.hologramAxes.CLim(1) = 1;
-axis(app.handles.hologramAxes,'image'); colormap(app.handles.hologramAxes, imorgen); 
-app.handles.hologramColorbar = colorbar(app.handles.hologramAxes);
-app.handles.hologramColorbar.Label.String = 'log10(signal) in a.u.';
 
 %% CREATE RECONSTRUCTION FIGURE AND PLOT
-if ~ishandle(app.handles.reconstructionFigure)
-    app.handles.reconstructionFigure = figure('Name','reconstruction');
-    app.handles.reconAxes = axes('parent', app.handles.reconstructionFigure);
-end
 
 app.handles.recon = fftshift(ifft2(fftshift(app.handles.hologram.masked))); % reconstruction
-app.handles.reconI = imagesc(part_and_scale(app.handles.recon, app.handles.logSwitch, app.handles.partSwitch),...
-    'parent', app.handles.reconAxes); % plot
-    axis(app.handles.reconAxes, 'image'); set_colormap(app.handles.colormap, app.handles.reconAxes); 
+
+if ~isgraphics(app.handles.reconstructionFigure)
+    app.handles.reconstructionFigure = figure('Name','reconstruction');
+    app.handles.reconAxes = axes('parent', app.handles.reconstructionFigure);
+    app.handles.reconI = imagesc(part_and_scale(app.handles.recon, app.handles.partSwitch),...
+        'parent', app.handles.reconAxes); % plot
+    axis(app.handles.reconAxes, 'image'); 
     app.handles.reconColorbar = colorbar(app.handles.reconAxes); 
     if get(app.scale_checkbox, 'Value')
         caxis(app.handles.reconAxes, [app.handles.minScale, app.handles.maxScale]);
     end
+else
+    app.handles.reconI.CData = part_and_scale(app.handles.recon, app.handles.partSwitch);
+end
+
+colormap(app.handles.reconAxes, app.handles.colormap); 
+app.handles.reconAxes.XLim = [1, size(app.handles.hologram.orig,2)];
+app.handles.reconAxes.YLim = [1, size(app.handles.hologram.orig,1)];
 
 %% SET ROI TO WHOLE IMAGE
 app.handles.rect(1) = 1;
@@ -116,9 +129,9 @@ app.handles.rect(4) = size(app.handles.hologram.orig,2)-1;
 
 %% REFRESH PHASE SLIDER
 
-try %#ok<*TRYNC>
-    delete(app.handles.phaseListener);
-end
+% try %#ok<*TRYNC>
+%     delete(app.handles.phaseListener);
+% end
 % app.handles.phaseListener = addlistener(app.handles.phase_slider,'ContinuousValueChange',@(hObject, eventdata) refreshImage(hObject, eventdata, guidata(hObject)));
 % app.phase_slider.ValueChangingFcn = @(src, event) refreshImage(app, event);
 

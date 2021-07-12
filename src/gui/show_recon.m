@@ -11,4 +11,4 @@ if get(app.scale_checkbox, 'Value')
     caxis(app.handles.reconAxes, [app.handles.minScale, app.handles.maxScale]);
 end
 
-refreshImage(app, event);
+refreshImage(app, app.handles.reconAxes);
