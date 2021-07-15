@@ -84,7 +84,7 @@ for nRho = 1:rstep:floor(Rlim)
     X = X + xavg;
     Y = Y + yavg;
     
-    if dispFlag,
+    if dispFlag
         h1 = figure(100);clf;box on;
         %     set(h1,'position',[10 500 400 300]);
         %     set(h1,'units','pixels');
@@ -111,9 +111,9 @@ for nRho = 1:rstep:floor(Rlim)
     norm = length(integ);
     rdat(nRho) = sum(integ)/norm;
     
-    if dispFlag,
+    if dispFlag
         H = plot(dat(1,:),dat(2,:),'y-');
-        if dispFlagC,
+        if dispFlagC
             for nrn = 1:length(dat)
                 H = plot(dat(1,nrn),dat(2,nrn),'m.','MarkerSize',12);
                 drawnow;
