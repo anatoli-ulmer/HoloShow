@@ -1,10 +1,8 @@
 function load_config(app, event)
 
-% content = cellstr(get(app.config_popupmenu, 'String'));
-% experiment = content{get(app.config_popupmenu, 'Value')};
-experiment = app.config_popupmenu.Value;
+app.handles.experiment = app.config_popupmenu.Value;
 
-fileID = fopen([experiment, '.hcfg']);
+fileID = fopen([app.handles.experiment, '.hcfg']);
 while ~feof(fileID)
     eval(char(fgetl(fileID)))
 end

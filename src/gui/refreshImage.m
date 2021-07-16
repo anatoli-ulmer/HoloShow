@@ -20,12 +20,6 @@ refreshPhase(app, event)
 reconScalebar(app, app.handles.reconAxes)
 
 app.handles.reconColorbar.Label.String = sprintf('%s part in a.u.', app.handles.partSwitch);
-
-if app.log_checkbox.Value
-%     output = log10(abs(output));
-    app.handles.reconAxes.ColorScale = 'log';
-else
-    app.handles.reconAxes.ColorScale = 'linear';
-end
+app.handles.reconAxes.ColorScale = iif(app.log_checkbox.Value, 'log', 'linear');
 
 drawnow

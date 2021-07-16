@@ -127,14 +127,7 @@ app.handles.rect(2) = 1;
 app.handles.rect(3) = size(app.handles.hologram.orig,1)-1;
 app.handles.rect(4) = size(app.handles.hologram.orig,2)-1;
 
-%% REFRESH PHASE SLIDER
 
-% try %#ok<*TRYNC>
-%     delete(app.handles.phaseListener);
-% end
-% app.handles.phaseListener = addlistener(app.handles.phase_slider,'ContinuousValueChange',@(hObject, eventdata) refreshImage(hObject, eventdata, guidata(hObject)));
-% app.phase_slider.ValueChangingFcn = @(src, event) refreshImage(app, event);
-
-%% REFRESH PLOT
+%% REFRESH RECONSTRUCTION PLOT
 refreshImage(app, event);
 
