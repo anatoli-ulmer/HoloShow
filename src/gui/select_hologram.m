@@ -2,6 +2,9 @@ function select_hologram(app, event)
 
 % TO DO: CHANGE HARD CODED MASKING
 
+app.handles.fileIndex = app.filenames_listbox.Value; % get index of selection
+%             [~, app.handles.fileIndex] = ismember(app.filenames_listbox.Value, app.filenames_listbox.Items);
+
 if iscell(app.handles.filenames)
     app.handles.currentFile = app.handles.filenames{app.handles.fileIndex};
 else
@@ -84,6 +87,7 @@ app.handles.hologram.masked = app.handles.hologram.masked.*exp(1i*app.handles.ph
 %% CREATE HOLOGRAM FIGURE AND PLOT
 if ~isgraphics(app.handles.hologramFigure)
     app.handles.hologramFigure = figure('Name','hologram');
+    app.handles.hologramFigure.Tag = 'holoShow.figures.hologram';
     app.handles.hologramAxes = axes('parent', app.handles.hologramFigure);
 %     app.handles.hologramI = imagesc(log10(abs(app.handles.hologram.masked)), 'parent', app.handles.hologramAxes); 
     app.handles.hologramI = imagesc(app.handles.hologramAxes, app.handles.hologram.masked); 
@@ -105,6 +109,7 @@ app.handles.recon = fftshift(ifft2(fftshift(app.handles.hologram.masked))); % re
 
 if ~isgraphics(app.handles.reconstructionFigure)
     app.handles.reconstructionFigure = figure('Name','reconstruction');
+    app.handles.reconstructionFigure.Tag = 'holoShow.figures.reconstruction';
     app.handles.reconAxes = axes('parent', app.handles.reconstructionFigure);
     app.handles.reconI = imagesc(part_and_scale(app.handles.recon, app.handles.partSwitch),...
         'parent', app.handles.reconAxes); % plot

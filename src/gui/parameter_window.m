@@ -1,4 +1,4 @@
-function varargout = parameter_window(varargin)
+function varargout = parameter_window(app, varargin)
 % PARAMETER_WINDOW MATLAB code for parameter_window.fig
 %      PARAMETER_WINDOW, by itself, creates a new PARAMETER_WINDOW or raises the existing
 %      singleton*.
@@ -53,9 +53,9 @@ function parameter_window_OpeningFcn(app, event, varargin)
 % varargin   command line arguments to parameter_window (see VARARGIN)
 
 % Choose default command line output for parameter_window
-app.handles.output = hObject;
-holoShow_figure = findobj('Tag','holoShow');
-holoShow_guidata = guidata(holoShow_figure);
+
+holoShow_figure = findobj('Tag','holoShow.figures.main');
+
 app.handles.parameter = {...
     'img_offset', holoShow_guidata.img_offset;...%1
     'add_slit', holoShow_guidata.add_slit;...%2
@@ -89,7 +89,7 @@ varargout{1} = app.handles.output;
 % --- Executes when entered data in editable cell(s) in parameter_uitable.
 function parameter_uitable_CellEditCallback(app, event)
 td = get(app.handles.parameter_uitable, 'data');
-holoShow_figure = findobj('Tag','holoShow');
+holoShow_figure = findobj('Tag','holoShow.figures.main');
 holoShow_guidata = guidata(holoShow_figure);
 % 
 % holoShow_guidata.img_offset = td{1,2};

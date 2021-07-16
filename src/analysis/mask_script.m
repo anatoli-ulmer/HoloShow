@@ -74,7 +74,7 @@ data(isnan(data)) = 0;
 % HIGHPASS FILTERING %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Modified see below!
 if HP_filter
     [X, Y] = meshgrid(-512:511,-512:511);
-    lowp = X.^2+Y.^2<HP_radius^2;
+    lowp = X.^2+Y.^2<HP_radius^2; 
     mask(lowp)=0;
 end
 
