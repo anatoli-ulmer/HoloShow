@@ -20,7 +20,7 @@ app.handles.noiseAxes.Colormap = 'jet';
 app.handles.noiseRectangleangle = round(getrect(gca));
 close(gcf);
 
-if app.square_checkbox.Value
+if app.squareROI_checkbox.Value
     app.handles.noiseRectangle(3) = max([app.handles.noiseRectangle(3),app.handles.noiseRectangle(4)]);
     app.handles.noiseRectangle(4) = max([app.handles.noiseRectangle(3),app.handles.noiseRectangle(4)]);
 end
@@ -32,9 +32,7 @@ app.data.noiseData = app.data.noiseData/length(app.data.noiseData);
 % Calc 2D FT for Noise
 app.data.noiseDataFT = fftshift(fft2(app.data.noiseData,1024,1024));
 
-% app.data.noiseRadialAverage = rscan(abs(app.data.noiseDataFT),'dispflag',false);
-% app.data.noiseRadialAverage = app.data.noiseRadialAverage(1:511);
-app.data.noiseRadialAverage = radialavg(app.data.noiseDataFT, 512);
+app.data.noiseRadialAverage = rmean(app.data.noiseDataFT, 512);
 
 cla(app.handles.noiseAxes);
 app.handles.noisePlot = semilogy(app.handles.noiseAxes, 1:512, app.data.noiseRadialAverage); 

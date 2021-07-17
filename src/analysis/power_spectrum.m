@@ -18,7 +18,8 @@ if zeroN
 else
     Fdata = fftshift(fft2(fftshift(data),zeroN,zeroN));
 end
-radprof = rscan(abs(Fdata),'dispflag',0);
+
+radprof = rmean(abs(Fdata));
 
 if twodim
     [X,Y] = size(Fdata);

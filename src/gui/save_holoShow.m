@@ -16,10 +16,10 @@ try
     data.phase = app.handles.phase;
     data.phaseOffset = app.handles.phaseOffset;
 
-    data.reconSpec = app.handles.reconSpec;
-    data.reconSpecDecon = app.handles.reconSpecDecon;
-    data.reconcutSpec = app.handles.reconcutSpec;
-    data.reconcutSpecDecon = app.handles.reconcutSpecDecon;
+    data.spectrumHolo = app.handles.spectrumHolo;
+    data.spectrumHoloDecon = app.handles.spectrumHoloDecon;
+    data.spectrumRecon = app.handles.spectrumRecon;
+    data.spectrumReconDecon = app.handles.spectrumReconDecon;
     data.noiseRect = app.handles.noiseRect;
     data.noiseSpec = app.handles.noiseSpec;
     data.noiseSpec2D = app.handles.noiseSpec2D;

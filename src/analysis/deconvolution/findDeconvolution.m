@@ -47,9 +47,11 @@ for i=1:length(radii)
     holoI.CData = reconcut; 
     title(['cluster radius = ', num2str(radii(i)*1e9)]); drawnow;
     
-    decon_plot = rscan(abs(deconvolved).^2, 'dispflag', false);
+    [decon_plot, xD] = rmean(abs(deconvolved).^2);
+    
     figure(860); clf
-    semilogy(abs(decon_plot)); hold on; semilogy(app.handles.reconSpec);
+    semilogy(abs(decon_plot)); hold on; 
+    semilogy(app.handles.spectrumHolo);
     
 end
 
