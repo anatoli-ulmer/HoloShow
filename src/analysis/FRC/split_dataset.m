@@ -1,7 +1,10 @@
 function [imageA,imageB] = split_dataset(input,varargin)
 
 % Split the input dataset into two downsampled sets by following algorithm
-% from Hantke et al. nature photonics 2014:
+% from: 
+% Hantke, M., Hasse, D., Maia, F. et al. High-throughput imaging of heterogen-
+% eous cell organelles with an X-ray laser. Nature Photon 8, 943–949 (2014).
+% https://doi.org/10.1038/nphoton.2014.270
 %
 % 1. Divide the input image into 4x4 super-pixels.
 % 2. For each of the super-pixels select 8 pixels at random.

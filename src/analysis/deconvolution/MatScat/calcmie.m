@@ -41,7 +41,8 @@ function [S, C, ang] = calcmie( r, ns, nm, lambda, nang, varargin )
 %   Author: Jan Schäfer (jan.schaefer@ilm.uni-ulm.de)
 %   Organization: Institut für Lasertechnologien in der Medizin und
 %       Meßtechnik an der Universität Ulm (http://www.ilm-ulm.de)
-
+% 
+% Jan Schäfer (2021). MatScat (https://www.mathworks.com/matlabcentral/fileexchange/36831-matscat), MATLAB Central File Exchange. Retrieved July 16, 2021. 
 
 %% Initialize Parameters
 p = inputParser;

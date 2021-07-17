@@ -1,9 +1,12 @@
 function refresh_hologram(app, event)
+
 % Needed if parameter values like center of hologram or shift/slit have
 % changed to update hologram and mask. Updates data and plots.
+% 
+% Anatoli Ulmer (2021). HoloShow
+% (https://github.com/anatoli-ulmer/holoShow)
 
-
-if app.handles.image_correction
+if app.applyHologramCorrection_checkbox.Value
     mask_script(app, event);
 else
     app.handles.hologram.masked = app.handles.hologram.orig;
@@ -32,7 +35,7 @@ if ~isgraphics(app.handles.hologramFigure)
     app.handles.hologramColorbar = colorbar(app.handles.hologramAxes);
     app.handles.hologramColorbar.Label.String = 'signal in a.u.';
 else
-    app.handles.hologramI.CData = app.handles.hologram.masked;
+    app.handles.hologramI.CData = abs(app.handles.hologram.masked);
 end
 
 

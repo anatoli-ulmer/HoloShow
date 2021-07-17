@@ -72,7 +72,7 @@ end
 fprintf(' done! \n');
 
 %% APPLY IMAGE CORRECTION
-if app.handles.image_correction
+if app.applyHologramCorrection_checkbox.Value
     fprintf('applying image correction ...\n');
     mask_script(app, event);
     fprintf('\t\t\t done!\n');
@@ -98,7 +98,7 @@ if ~isgraphics(app.handles.hologramFigure)
     app.handles.hologramColorbar = colorbar(app.handles.hologramAxes);
     app.handles.hologramColorbar.Label.String = 'signal in a.u.';
 else
-    app.handles.hologramI.CData = app.handles.hologram.masked;
+    app.handles.hologramI.CData = abs(app.handles.hologram.masked);
 end
 
 app.handles.hologramAxes.CLim(1) = 1;

@@ -23,8 +23,9 @@ function [rdat,xcoord,ycoord] = rscan(M0,varargin)
 %    'squeezx',0.7,'rot',pi/4);
 %
 % Draw Circle:
-% [ref] http://www.mathworks.com/matlabcentral/fileexchange/
-%       loadFile.do?objectId=2876&objectType=file
+% [ref] http://www.mathworks.com/matlabcentral/fileexchange/loadFile.do?objectId=2876&objectType=file
+
+% Narupon Chattrapiban (2021). Radial Scan (https://www.mathworks.com/matlabcentral/fileexchange/18102-radial-scan), MATLAB Central File Exchange. Retrieved July 16, 2021
 
 if nargin < 1
     disp('This is a Demo');
