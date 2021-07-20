@@ -81,4 +81,4 @@ Now you should have a low resolution reconstruction. Keep in mind that depending
 
 ## License
 
-TO DO
+see LICENSE file
