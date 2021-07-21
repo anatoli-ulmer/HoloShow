@@ -61,7 +61,7 @@ profile_plot = profile_plot/profile_plot(ind) * minval;
 
 app.handles.hologram.propagated = propagateHologram(deconvolved, app.handles.phase, app.handles.lambda, app.handles.detDistance, app.handles.cut_center);
 recon = ift2(app.handles.hologram.propagated);
-ROI = app.handles.rect;
+ROI = app.data.recon.roi;
 reconcut = recon(ROI(2):ROI(2)+ROI(4),ROI(1):ROI(1)+ROI(3));
 
 [decon_plot, xD] = rmean(abs(ft2(zeropadding(reconcut))).^2);

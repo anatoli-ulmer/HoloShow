@@ -17,7 +17,12 @@ end
 app.handles.recon = ift2(app.handles.hologram.propagated);
 
 app.handles.reconI.CData = part_and_scale(app.handles.recon(...
-    app.handles.rect(2):app.handles.rect(2)+app.handles.rect(4),app.handles.rect(1):app.handles.rect(1)+app.handles.rect(3)),...
+    app.data.recon.roi(2):app.data.recon.roi(2)+app.data.recon.roi(4),app.data.recon.roi(1):app.data.recon.roi(1)+app.data.recon.roi(3)),...
     app.handles.partSwitch);
+app.handles.reconAxes.XLim = [1, 1+app.data.recon.roi(3)];
+app.handles.reconAxes.YLim = [1, 1+app.data.recon.roi(4)];
+grid(app.handles.reconAxes, 0);
+% app.handles.reconAxes.XLim = [app.data.recon.roi(1), app.data.recon.roi(1)+app.data.recon.roi(3)];
+% app.handles.reconAxes.YLim = [app.data.recon.roi(2), app.data.recon.roi(2)+app.data.recon.roi(4)];
 
 drawnow

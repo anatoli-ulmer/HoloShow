@@ -127,10 +127,10 @@ app.handles.reconAxes.XLim = [1, size(app.handles.hologram.orig,2)];
 app.handles.reconAxes.YLim = [1, size(app.handles.hologram.orig,1)];
 
 %% SET ROI TO WHOLE IMAGE
-app.handles.rect(1) = 1;
-app.handles.rect(2) = 1;
-app.handles.rect(3) = size(app.handles.hologram.orig,1)-1;
-app.handles.rect(4) = size(app.handles.hologram.orig,2)-1;
+app.data.recon.roi(1) = 1;
+app.data.recon.roi(2) = 1;
+app.data.recon.roi(3) = size(app.handles.hologram.orig,1)-1;
+app.data.recon.roi(4) = size(app.handles.hologram.orig,2)-1;
 
 
 %% REFRESH RECONSTRUCTION PLOT

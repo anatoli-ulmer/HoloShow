@@ -13,7 +13,7 @@ q = 4*pi/app.handles.lambda*sin(theta/2);
 [xx,yy] = meshgrid(-512:511,-512:511);
 xx(xx==0)=1;
 
-figure(23446); holoI = imagesc(part_and_scale(app.handles.recon(app.handles.rect(2):app.handles.rect(2)+app.handles.rect(4),app.handles.rect(1):app.handles.rect(1)+app.handles.rect(3)),...
+figure(23446); holoI = imagesc(part_and_scale(app.handles.recon(app.data.recon.roi(2):app.data.recon.roi(2)+app.data.recon.roi(4),app.data.recon.roi(1):app.data.recon.roi(1)+app.data.recon.roi(3)),...
         app.handles.partSwitch)); axis square; drawnow;
     
 for i=1:length(radii)
@@ -41,7 +41,7 @@ for i=1:length(radii)
     
     app.handles.recon = fftshift(ifft2(fftshift(deconvolved)));
     
-    reconcut = part_and_scale(app.handles.recon(app.handles.rect(2):app.handles.rect(2)+app.handles.rect(4),app.handles.rect(1):app.handles.rect(1)+app.handles.rect(3)),...
+    reconcut = part_and_scale(app.handles.recon(app.data.recon.roi(2):app.data.recon.roi(2)+app.data.recon.roi(4),app.data.recon.roi(1):app.data.recon.roi(1)+app.data.recon.roi(3)),...
         app.handles.partSwitch);
     
     holoI.CData = reconcut; 

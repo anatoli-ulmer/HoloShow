@@ -1,12 +1,12 @@
-function [xshift, yshift, phaseOffset] = find_center(handles)
+function [xshift, yshift, phaseOffset] = find_center(app)
 % Hier sind zwei Verfahren moeglich. Das implementierte erreicht eine
 % Genauigkeit von 1 Pixel. Subpixelgenauigkeit ist in Arbeit.
 
-hologram = handles.hologram.masked;
-phase = handles.phase*1e-9;
-ROI = handles.rect;
-lambda = handles.lambda;
-CCD_S_DIST = handles.detDistance;
+hologram = app.handles.hologram.masked;
+phase = app.handles.phase*1e-9;
+ROI = app.data.recon.roi;
+lambda = app.handles.lambda;
+CCD_S_DIST = app.handles.detDistance;
 
 fprintf('looking for center of hologram ...\n');
 [Xrange, Yrange] = size(hologram);
@@ -25,7 +25,7 @@ delta = 1;
 maxMap = 0;
 
 sumrealmap3D = ones(2*varrange/delta+1);
-[phx,phy] = meshgrid(1:1+ROI(4),1:1+ROI(3));
+[phx,phy] = meshgrid(1:1+ROI(3),1:1+ROI(4));
 phx = phx/Xrange*2*pi;
 phy = phy/Yrange*2*pi;
 

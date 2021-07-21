@@ -11,7 +11,7 @@ try
     data.m = app.handles.mask;
     data.hardmask = app.handles.hardmask;
 
-    data.rect = app.handles.rect;
+    data.roi = app.data.recon.roi;
     data.centroids = app.handles.centroids;
     data.phase = app.handles.phase;
     data.phaseOffset = app.handles.phaseOffset;
