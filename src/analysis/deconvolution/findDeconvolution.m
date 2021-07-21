@@ -51,7 +51,7 @@ for i=1:length(radii)
     
     figure(860); clf
     semilogy(abs(decon_plot)); hold on; 
-    semilogy(app.handles.spectrumHolo);
+    semilogy(app.data.hologram.spectrum);
     
 end
 
