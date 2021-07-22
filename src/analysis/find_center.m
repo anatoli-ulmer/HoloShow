@@ -8,7 +8,7 @@ ROI = app.data.recon.roi;
 lambda = app.handles.lambda;
 CCD_S_DIST = app.handles.detDistance;
 
-fprintf('looking for center of hologram ...\n');
+fprintf('looking for center of hologram ... ');
 [Xrange, Yrange] = size(hologram);
 PX_SIZE = 75e-6;
 H_center_q=Xrange/2+1;
@@ -63,12 +63,12 @@ for rts = -varrange:delta:varrange
             yshift=rts;
         end
     end
-    warning('off','MATLAB:HandleGraphics:ObsoletedProperty:JavaFrame');
-    statusbar('Looking for center (%.1f%%)...',100*i/((2*varrange+1)/delta));
+%     warning('off','MATLAB:HandleGraphics:ObsoletedProperty:JavaFrame');
+%     statusbar('Looking for center (%.1f%%)...',100*i/((2*varrange+1)/delta));
     i=i+1;
 end
 
-statusbar;
+% statusbar;
 
 % figure(11); surf(sumrealmap3D(:,:));
 figure(33); imagesc(-varrange:delta:varrange,-varrange:delta:varrange,sumrealmap3D); axis image;
@@ -76,4 +76,4 @@ colormap gray; colorbar; title('finding center position metric'); drawnow
 xlabel('shift in x')
 ylabel('shift in y')
 
-fprintf(' done! \n');
+fprintf('done! \n');

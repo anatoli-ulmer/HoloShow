@@ -28,12 +28,12 @@ showSMOOTH = false; % show smoothed mask and pattern
 %% LOAD DATA & MASK
 
 origdata = app.handles.hologram.orig;
-try
-    origdata = origdata  .* (~app.handles.hummingbird_mask);
-catch
-%     warning('could not apply hummingbird mask')
-    fprintf('No applicable hummingbird mask.\n')
-end
+% try
+%     origdata = origdata  .* (~app.handles.hummingbird_mask);
+% catch
+% %     warning('could not apply hummingbird mask')
+%     fprintf('No applicable hummingbird mask.\n')
+% end
 
 origdata(abs(origdata)>=app.handles.adu_max) = 0; % set saturated pixels to 0
 if IF_filter

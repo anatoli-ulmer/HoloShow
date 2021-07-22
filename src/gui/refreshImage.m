@@ -1,4 +1,4 @@
- function refreshImage(app, event)
+function refreshImage(app, event)
 
 refreshPhase(app, event)
 

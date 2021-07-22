@@ -1,5 +1,5 @@
 %% modified segmentation algorithm from http://de.mathworks.com/help/images/examples/detecting-a-cell-using-image-segmentation.html
-function centroids = findCrossCorrelations(hologram, varargin)
+function centroids = findCrossCorrelations(app, hologram, varargin)
 
 show_img = true;
 min_dist = 100;

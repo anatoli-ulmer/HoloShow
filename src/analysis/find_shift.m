@@ -2,7 +2,7 @@ function [shift, slit, phaseOffset] = find_shift(hologram,phase,ROI)
 % Hier sind zwei Verfahren moeglich. Das implementierte erreicht eine
 % Genauigkeit von 1 Pixel. Subpixelgenauigkeit ist in Arbeit.
 
-fprintf('looking for detector shift ...');
+fprintf('looking for detector shift ... ');
 
 [Xrange, Yrange] = size(hologram);
 PX_SIZE = 75e-6;
@@ -75,15 +75,18 @@ for rts = -varrange:delta:varrange
 
     end
 %     sprintf('%.0f %%\n', 100*i/((2*varrange+1)/delta))
-    warning('off','MATLAB:HandleGraphics:ObsoletedProperty:JavaFrame');
-    statusbar('Looking for detector shift (%.1f%%)...',100*i/((2*varrange+1)/delta));
+%     warning('off','MATLAB:HandleGraphics:ObsoletedProperty:JavaFrame');
+%     statusbar('Looking for detector shift (%.1f%%)...',100*i/((2*varrange+1)/delta));
     i=i+1;
 end
 
-statusbar;
+% statusbar;
 
-figure(11); surf(sumrealmap3D(:,:));
-figure(33); imagesc(-varrange:delta:varrange,-varrange:delta:varrange,sumrealmap3D); axis square;
+% figure(11); surf(sumrealmap3D(:,:));
+figure(34); imagesc(-varrange:delta:varrange,-varrange:delta:varrange,sumrealmap3D); axis image;
+colormap gray; colorbar; title('finding detector shift metric');
+xlabel('shift in x')
+ylabel('shift in y')
 
 %%
 rm = sumrealmap3D/max(sumrealmap3D(:));
@@ -115,7 +118,7 @@ end
 phaseOffset = tmpalpha;
 Rcut = reconcut.*exp(1i*phaseOffset);
 
-figure(28);
-imagesc(real(Rcut)); axis square; colormap gray;
+% figure(28);
+% imagesc(real(Rcut)); axis square; colormap gray;
 
-fprintf(' done! \n');
+fprintf('done! \n');
