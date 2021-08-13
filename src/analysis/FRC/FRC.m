@@ -23,33 +23,31 @@ if realspace
     imageB=fftshift(fft2(fftshift(imageB)));
 end
 
-IA=imageA;
-IB=imageB;
-N=length(IA);
+nPixel=size(imageA);
 
-[X,Y]=meshgrid(-N/2:N/2-1,-N/2:N/2-1);
-out=zeros(1,floor(N/2-ringwidth));
-Np=zeros(1,floor(N/2-ringwidth));
-ring=zeros(N);
+[X,Y]=meshgrid(-nPixel(2)/2:nPixel(2)/2-1,-nPixel(1)/2:nPixel(1)/2-1);
+out=zeros(1,floor(max(nPixel)/2-ringwidth));
+nPixelRing=zeros(1,floor(max(nPixel)/2-ringwidth));
+ring=zeros(nPixel);
 
-for rad=1:floor(N/2-ringwidth)
-    ring(X.^2+Y.^2<(ringwidth+rad).^2)=1;
-    ring(X.^2+Y.^2<rad.^2)=0; 
+for ringRadius=1:floor(nPixel/2-ringwidth)
+    ring(X.^2+Y.^2<(ringwidth+ringRadius).^2)=1;
+    ring(X.^2+Y.^2<ringRadius.^2)=0; 
     
-    Np(rad)=sum(ring(:));
+    nPixelRing(ringRadius)=sum(ring(:));
     
-    IAring=IA.*ring;
-    IBring=IB.*ring;
+    IAring=imageA.*ring;
+    IBring=imageB.*ring;
     
     temp=IAring.*conj(IBring);
     
     normA=abs(IAring).^2;
     normB=abs(IBring).^2;
     
-    out(rad)=sum(temp(:))/sqrt(sum(normA(:))*sum(normB(:)));
+    out(ringRadius)=sum(temp(:))/sqrt(sum(normA(:))*sum(normB(:)));
 end
 
 FRCout=abs(out);
-twoSigma = 2./(sqrt(Np/2));
-halfBit = (0.2071+1.9102./sqrt(Np))./(1.2071+0.9102./sqrt(Np));
+twoSigma = 2./(sqrt(nPixelRing/2));
+halfBit = (0.2071+1.9102./sqrt(nPixelRing))./(1.2071+0.9102./sqrt(nPixelRing));
 

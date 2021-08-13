@@ -87,7 +87,9 @@ function [aArray, rArray] = rmean(I, rMax, rCenter)
         % find all matrix locations whose radial distance is in the jth bin
 %         % exclude data that is NaN
         bins(:,:) = rMatrix>=rbins(j) & rMatrix<rbins(j+1);
-        aArray(j) = nanmean(I(bins));
+        aVals = I(bins);
+        aVals = aVals(~isnan(aVals));
+        aArray(j) = mean(aVals);
     end
 %         % count the number of those locations
 %         n = sum(bins(:));
