@@ -66,7 +66,7 @@ holoShow reads scattering image data files in ASCII format with ending `.dat`, M
 
 INSTRUCTIONS:
 
-1.) Start with executing `holoShowV3.m` and the control GUI will open together with the hologram window and the reconstruction window.
+1.) Start with executing `HoloShow.mlapp` and the control window will open together with the hologram window and the reconstruction window.
 
 2.) Pick a file in the pre-chosen file list on the left or load new files with the button above the list. The button below the list will execute first evaluation steps.
 

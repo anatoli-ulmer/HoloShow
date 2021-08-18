@@ -55,6 +55,9 @@ switch app.handles.ext
             app.handles.refined_mask = dlmread('FLASH2017_refined_mask.dat');
             app.handles.hologram.orig = detector_offset_correction(app.handles.hologram.orig, app.handles.refined_mask, app.handles.detDistance);
         end
+        hCenter = ceil(size(app.handles.hologram.orig)/2);
+        app.handles.hologram.orig = app.handles.hologram.orig(...
+            hCenter(1)-511:hCenter(1)+512, hCenter(2)-511:hCenter(2)+512);
 %         app.handles.hologram.orig = app.handles.hologram.orig(31:1024+30,1:1024);
 %         load('test_int_correction.mat');
 %         int_corr(isnan(int_corr))=0;
