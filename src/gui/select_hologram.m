@@ -50,8 +50,7 @@ switch app.handles.ext
         
     case '.h5'
         app.handles.hologram.orig = h5read(fullfile(app.handles.pathname, app.handles.first_file), app.handles.cxi_entryname, [1+app.handles.img_offset 1 app.handles.fileIndex],[1074 1024 1]);
-        experiment = app.config_popupmenu.Value;
-        if strcmp(experiment, 'FLASH2017')
+        if strcmp(app.config.experiment, 'FLASH2017')
             app.handles.refined_mask = dlmread('FLASH2017_refined_mask.dat');
             app.handles.hologram.orig = detector_offset_correction(app.handles.hologram.orig, app.handles.refined_mask, app.handles.detDistance);
         end
