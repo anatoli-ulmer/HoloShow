@@ -59,7 +59,7 @@ To use MATLAB on **psana** please use nomachine:
 
 ## Usage
 
-Run `holoShowV3.m` in MATLAB. 
+Run `HoloShow.mlapp` in MATLAB. 
 
 holoShow reads scattering image data files in ASCII format with ending `.dat`, MATLAB files with ending `.mat` or HDF5 files with Hummingbird standard structure with ending `.cxi` or `.h5`.
 

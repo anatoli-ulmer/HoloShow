@@ -1,9 +1,9 @@
 function deconvolved = clusterDeconvolution(app, event)
 
 R = app.handles.clusterradius*1e-9;
-x = 1:800;
-x = x*75e-6;
-theta = atan(x./(app.handles.detDistance));
+xRange = 1:800;
+xRange = xRange*75e-6;
+theta = atan(xRange./(app.handles.detDistance));
 q = 4*pi/app.handles.lambda*sin(theta/2);
 
 switch app.handles.decon_profile
@@ -46,16 +46,17 @@ deconvolved = deconvolved./(abs(Freference).^2+1./sqrt(abs(app.handles.hologram.
 
 % PLOTTING
 
-if app.handles.HPfiltering; lowb = max(app.handles.HPfrequency,50); else lowb = 50; end
-if app.handles.LPfiltering; upb = min(app.handles.LPfrequency,511); else upb = 511; end
-x = lowb:upb;
+if app.handles.HPfiltering; lowerBound = max(app.handles.HPfrequency,50); else lowerBound = 50; end
+if app.handles.LPfiltering; upperBound = min(app.handles.LPfrequency,511); else upperBound = 511; end
+xRange = lowerBound:upperBound;
 
-[maxval,~] = max(app.data.hologram.spectrum(lowb:upb));
-mie_plot = abs(profile(lowb:upb)).^2;
+[maxval,~] = max(app.data.hologram.spectrum(xRange));
+% [maxval,~] = max(app.data.hologram.spectrum);
+mie_plot = abs(profile(xRange)).^2;
 mie_plot = mie_plot/max(mie_plot) * maxval;
  
-[minval,ind] = nanmin(app.data.hologram.spectrum(x));
-profile_plot = abs(profile(x)).^2;
+[minval,ind] = min(app.data.hologram.spectrum(xRange));
+profile_plot = abs(profile(xRange)).^2;
 profile_plot = profile_plot/profile_plot(ind) * minval;
 
 
@@ -71,13 +72,13 @@ reconcut = recon(ROI(2):ROI(2)+ROI(4),ROI(1):ROI(1)+ROI(3));
 
 figure(86);
 % subplot(221); semilogy(x, app.data.hologram.spectrum(x), x, profile_plot); title('power spectrum full image');
-subplot(222); semilogy(x, app.data.hologram.spectrum(x), x, profile_plot); title('power spectrum ROI');
-subplot(223); semilogy(x, decon_plot(x), x, profile_plot); title('power spectrum deconvolved');
-subplot(224); semilogy(x, app.data.hologram.spectrum(x), x, decon_plot(x)/max(decon_plot(x))*max(app.data.hologram.spectrum(x))); title('power spectrum deconvolved');
+subplot(222); semilogy(xRange, app.data.hologram.spectrum(xRange), xRange, profile_plot); title('power spectrum ROI');
+subplot(223); semilogy(xRange, decon_plot(xRange), xRange, profile_plot); title('power spectrum deconvolved');
+subplot(224); semilogy(xRange, app.data.hologram.spectrum(xRange), xRange, decon_plot(xRange)/max(decon_plot(xRange))*max(app.data.hologram.spectrum(xRange))); title('power spectrum deconvolved');
 
 figure(87);
-semilogy(q(x)*1e-9, app.data.hologram.spectrum(x), q(x)*1e-9, profile_plot, '-', ...
-q(x)*1e-9, decon_plot(x),  'black', q(x)*1e-9, q(x).^-4 * 3.5e32, '--' );
+semilogy(q(xRange)*1e-9, app.data.hologram.spectrum(xRange), q(xRange)*1e-9, profile_plot, '-', ...
+q(xRange)*1e-9, decon_plot(xRange),  'black', q(xRange)*1e-9, q(xRange).^-4 * 3.5e32, '--' );
 legend('raw spectrum', 'reference spectrum', 'deconvolved spectrum', 'q^{-4}');
 xlabel('q [nm^{-1}]'); ylabel('I [a.u.]');
 
