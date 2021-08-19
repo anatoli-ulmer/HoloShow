@@ -8,8 +8,8 @@ switch str
         colormap(ax,r2b);
     case 'jet'
         colormap(ax,jet);
-    case 'ms'
-        colormap(ax,morgenstemning);
+    case 'ihesp'
+        colormap(ax,ihesperia);
     case 'gray'
         colormap(ax,gray);
     case 'hsv'

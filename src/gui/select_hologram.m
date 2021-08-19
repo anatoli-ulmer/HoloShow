@@ -111,6 +111,7 @@ if ~isgraphics(app.handles.hologramFigure)
     colormap(app.handles.hologramAxes, ihesperia); 
     app.handles.hologramColorbar = colorbar(app.handles.hologramAxes);
     app.handles.hologramColorbar.Label.String = 'signal in a.u.';
+    app.handles.hologramAxes.Title.String = 'scattering pattern';
 else
     app.handles.hologramI.CData = abs(app.handles.hologram.masked);
 end
@@ -132,6 +133,7 @@ if ~isgraphics(app.handles.reconstructionFigure)
     if get(app.scale_checkbox, 'Value')
         caxis(app.handles.reconAxes, [app.handles.minScale, app.handles.maxScale]);
     end
+    app.handles.reconAxes.Title.String = 'patterson map';
 else
     app.handles.reconI.CData = part_and_scale(app.handles.recon, app.handles.partSwitch);
 end
