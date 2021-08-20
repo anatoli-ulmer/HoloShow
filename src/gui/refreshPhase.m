@@ -21,7 +21,7 @@ app.handles.reconI.CData = part_and_scale(app.handles.recon(...
     app.handles.partSwitch);
 app.handles.reconAxes.XLim = [1, 1+app.data.recon.roi(3)];
 app.handles.reconAxes.YLim = [1, 1+app.data.recon.roi(4)];
-grid(app.handles.reconAxes, 0);
+grid(app.handles.reconAxes, false);
 % app.handles.reconAxes.XLim = [app.data.recon.roi(1), app.data.recon.roi(1)+app.data.recon.roi(3)];
 % app.handles.reconAxes.YLim = [app.data.recon.roi(2), app.data.recon.roi(2)+app.data.recon.roi(4)];
 

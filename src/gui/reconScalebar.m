@@ -12,7 +12,7 @@ sc = max(sarray(sarray<N*nmPerPixel/2));
 
 sbarL = sc/nmPerPixel;
 % sbarW = sbarL/10;
-sbarW = 1;
+sbarW = 2;
 
 sbarPosition = [N-sbarL-2*sbarW, 3*sbarW, sbarL, sbarW];
 stextPosition = sbarPosition(1:2) + [sbarL/2, sbarPosition(4)] ;
