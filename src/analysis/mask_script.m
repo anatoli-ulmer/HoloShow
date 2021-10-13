@@ -57,6 +57,12 @@ if showMASKS
     subplot(133); imagesc(origdata); axis image; set(gca, 'ColorScale', 'log');
 end
 
+if ~isfield(app.handles,'hummingbird_mask')
+    app.handles.hummingbird_mask = ones(size(app.handles.origmask));
+end
+
+% figure(3343); imagesc(app.handles.hummingbird_mask>0);
+
 %% CENTER PICTURE & COMMON MODE
 
 % CORRECTION OF CENTER SHIFT
