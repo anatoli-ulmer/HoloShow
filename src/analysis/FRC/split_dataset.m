@@ -38,9 +38,6 @@ for i=1:Npixel(1)
     end
 end
 
-imageA=imageA/8;
-imageB=imageB/8;
-
 
 function [pixel1, pixel2] = divide_superpixel(superpixel)
 
@@ -54,5 +51,5 @@ function [pixel1, pixel2] = divide_superpixel(superpixel)
     ind=pixelarray(randperm(superpixelsize^2)); % a random permutation of your data
     ind=reshape(ind,numel(pixelarray)/nSets,nSets); % reshape so that each col is a 'set'
 
-    pixel1=sum(superpixel(ind(:,1)));
-    pixel2=sum(superpixel(ind(:,2)));
+    pixel1=nanmean(superpixel(ind(:,1)));
+    pixel2=nanmean(superpixel(ind(:,2)));

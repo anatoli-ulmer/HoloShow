@@ -1,4 +1,4 @@
-function [S, C, ang] = asmmie( an, bn, nang, k )
+function [S, C, ang] = asmmie( an, bn, nang, k, maxang)
 %ASMMIE Calculates the amplitude scattering matrix and cross sections for 
 %   given expansion coefficients of a spherical particle.
 %
@@ -22,10 +22,18 @@ function [S, C, ang] = asmmie( an, bn, nang, k )
 %   Author: Jan Schäfer (jan.schaefer@ilm.uni-ulm.de)
 %   Organization: Institut für Lasertechnologien in der Medizin und
 %       Meßtechnik an der Universität Ulm (http://www.ilm-ulm.de)
+%
+%Addition:
+% Edited by Anatoli Ulmer (anatoli.ulmer@gmail.com ) on 2022-01-12:
+% Added maximum angle input variable and condition -> Line 32 - 36 
 
 %% Initialize parameters
 n = 1:numel(an);
-ang = (0:nang-1)/(nang-1)*pi;
+if nargin>4
+    ang = linspace(0,maxang/180*pi,nang);
+else
+    ang = (0:nang-1)/(nang-1)*pi;
+end
 
 n2 = (2*n+1);
 En = n2./(n.*(n+1));

@@ -3,6 +3,7 @@ function [FRCout, twoSigma, halfBit, imageA, imageB] = FRC(image,varargin)
 realspace=false;
 superpixelsize=4;
 ringwidth=3;
+fftsize = [1024, 1024];
 
 if exist('varargin','var')
     L = length(varargin);
@@ -12,6 +13,7 @@ if exist('varargin','var')
             case 'realspace', realspace = varargin{ni+1};
             case 'superpixelsize', superpixelsize = varargin{ni+1};
             case 'ringwidth', ringwidth = varargin{ni+1}; 
+            case 'fftsize', fftsize = varargin{ni+1};
         end
     end
 end
@@ -19,8 +21,8 @@ end
 [imageA,imageB] = split_dataset(image,'superpixelsize',superpixelsize);
 
 if realspace
-    imageA=fftshift(fft2(fftshift(imageA)));
-    imageB=fftshift(fft2(fftshift(imageB)));
+    imageA=fftshift(fft2(fftshift(imageA), fftsize(1), fftsize(2)));
+    imageB=fftshift(fft2(fftshift(imageB), fftsize(1), fftsize(2)));
 end
 
 nPixel=size(imageA);
