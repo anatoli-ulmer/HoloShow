@@ -28,9 +28,9 @@ try
     data.clusterradius = app.handles.clusterradius;
     data.wiener = app.handles.wiener; 
     
-    data.FRC.data = app.handles.FRC.data;
-    data.FRC.twoSigma = app.handles.FRC.twoSigma;
-    data.FRC.halfBit = app.handles.FRC.halfBit; %#ok<STRNU>    
+    data.frc.frc = app.data.frc.frc;
+    data.frc.twoSigma = app.data.frc.twoSigma;
+    data.frc.halfBit = app.data.frc.halfBit; 
 catch ME
     warning(['Did not save! reason: ' ME.message])
 end    

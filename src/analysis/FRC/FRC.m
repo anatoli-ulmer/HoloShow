@@ -20,14 +20,13 @@ end
 
 [imageA,imageB] = split_dataset(image,'superpixelsize',superpixelsize);
 
-if isnan(fftsize) || any(size(imageA) > fftsize)
-    fftsize = [1, 1]*2^nextpow2(max(size(imageA)));
-end
-if numel(fftsize) == 1
-    fftsize = [1, 1]*fftsize;
-end
-
 if realspace
+    if isnan(fftsize) || any(size(imageA) > fftsize)
+        fftsize = [1, 1]*2^nextpow2(max(size(imageA)));
+    end
+    if numel(fftsize) == 1
+        fftsize = [1, 1]*fftsize;
+    end
     imageA=fftshift(fft2(fftshift(imageA), fftsize(1), fftsize(2)));
     imageB=fftshift(fft2(fftshift(imageB), fftsize(1), fftsize(2)));
 end

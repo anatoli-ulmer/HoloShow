@@ -28,8 +28,8 @@ end
 Npixel = size(input)/superpixelsize; % must be divisible by superpixelsize
 superpixelmatrix = mat2cell(input, superpixelsize*ones(1,Npixel(1)), superpixelsize*ones(1,Npixel(2)));
 
-imageA=zeros(Npixel);
-imageB=zeros(Npixel);
+imageA=nan(Npixel);
+imageB=nan(Npixel);
 
 for i=1:Npixel(1)
     for j=1:Npixel(2)
