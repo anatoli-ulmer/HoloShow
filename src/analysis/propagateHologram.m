@@ -23,17 +23,17 @@ if nargin < 6
     meth='plane-wave';
 end
 
-[Xrange, Yrange] = size(hologram);
+[Yrange, Xrange] = size(hologram);
 PX_SIZE = 75e-6;
-H_center_q=Xrange/2+1;
-H_center_p=Yrange/2+1;
-[p,q] = meshgrid(1:Yrange, 1:Xrange);
+H_center_x=Xrange/2+1;
+H_center_y=Yrange/2+1;
+[q_x,q_y] = meshgrid((1:Xrange)-H_center_x, (1:Yrange)-H_center_y);
 
 switch meth
     case 'plane-wave'
-        tempPhase=(prop_l*2*pi/(lambda*1e9))*(1-((PX_SIZE/CCD_S_DIST)^2)*((q-H_center_q).^2+ (p-H_center_p).^2)).^(1/2); % plane wave propagation
+        tempPhase=(prop_l*2*pi/(lambda*1e9))*(1-((PX_SIZE/CCD_S_DIST)^2)*(q_x.^2+ q_y.^2)).^(1/2); % plane wave propagation
     case 'fresnel'
-        tempPhase=-prop_l*pi*(lambda*1e9)*(PX_SIZE/CCD_S_DIST)^2*((q-H_center_q).^2+ (p-H_center_p).^2); % Fresnel Rayleigh propagator
+        tempPhase=-prop_l*pi*(lambda*1e9)*(PX_SIZE/CCD_S_DIST)^2*(q_x.^2+ q_y.^2); % Fresnel Rayleigh propagator
 end
 
 if cut_center > 0

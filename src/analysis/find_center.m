@@ -24,7 +24,7 @@ varrange = 10;
 delta = 1;
 maxMap = 0;
 
-sumrealmap3D = ones(2*varrange/delta+1);
+sumrealmap3D = zeros(2*varrange/delta+1);
 [phx,phy] = meshgrid(1:1+ROI(3),1:1+ROI(4));
 phx = phx/Xrange*2*pi;
 phy = phy/Yrange*2*pi;

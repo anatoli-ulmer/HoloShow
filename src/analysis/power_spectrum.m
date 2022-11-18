@@ -19,7 +19,7 @@ else
     Fdata = fftshift(fft2(fftshift(data),zeroN,zeroN));
 end
 
-radprof = rmean(abs(Fdata));
+radprof = rmean(abs(Fdata), app.handles.rmean.range, [], app.handles.rmean.bins);
 
 if twodim
     [X,Y] = size(Fdata);

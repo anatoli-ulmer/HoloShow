@@ -32,7 +32,7 @@ app.data.noiseData = app.data.noiseData/length(app.data.noiseData);
 % Calc 2D FT for Noise
 app.data.noiseDataFT = fftshift(fft2(app.data.noiseData,1024,1024));
 
-app.data.noiseRadialAverage = rmean(app.data.noiseDataFT, 512);
+app.data.noiseRadialAverage = rmean(app.data.noiseDataFT, app.handles.rmean.range, [], app.handles.rmean.bins);
 
 cla(app.handles.noiseAxes);
 app.handles.noisePlot = semilogy(app.handles.noiseAxes, 1:512, app.data.noiseRadialAverage); 

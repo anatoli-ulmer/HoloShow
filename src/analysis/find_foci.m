@@ -1,8 +1,10 @@
-function foci = find_foci(hologram, lambda, det_distance, centroids, varargin)
+function app = find_foci(app, hologram, lambda, det_distance, centroids, varargin)
 % Copyright (c) 2015, Anatoli Ulmer <anatoli.ulmer@gmail.com>
 
 if size(centroids,1)==0
     foci = 0;
+    hFociRes.figure = app.get_figure('foci_results');
+    clf(hFociRes.figure);
     return
 end
 
@@ -11,7 +13,9 @@ z_end = 50000;
 steps = 20;
 use_gpu = false;
 show_results = false;
+show_focusing = true;
 crop_factor = 1;
+roi_pixels = 80;
 
 if exist('varargin','var')
     L = length(varargin);
@@ -23,6 +27,7 @@ if exist('varargin','var')
             case 'steps', steps = varargin{ni+1};
             case 'use_gpu', use_gpu = varargin{ni+1};
             case 'show_results', show_results = varargin{ni+1};
+            case 'show_focusing', show_focusing = varargin{ni+1};
             case 'crop_factor', crop_factor = varargin{ni+1};
         end
     end
@@ -35,7 +40,7 @@ if crop_factor > 1
 end
 
 Nfoci = size(centroids,1);
-Npixel = round(80/crop_factor);
+Npixel = round(roi_pixels/crop_factor);
 [Xrange, Yrange] = size(hologram);
 PX_SIZE = 75e-6;
 H_center_q=Xrange/2+1;
@@ -52,7 +57,7 @@ firstS = true(Nfoci);
 x = z_start:ste:z_end;
 metric = zeros(length(x),Nfoci);
 
-if use_gpu
+if app.handles.gpu
     hologram = gpuArray(hologram);
     tempProp = gpuArray(tempProp);
     metric = gpuArray(metric);
@@ -73,14 +78,19 @@ for phase = z_start:ste:z_end
         ma = abs(mean(reconcut(:)));
         metric(i,CC) = var(abs(reconcut(:))-ma);
         
-        if show_results
+        if show_focusing
             if firstS(CC)
-                figure(35123);
-                subplot(round(sqrt(Nfoci)),ceil(sqrt(Nfoci)),CC); fociImage(CC) = imagesc(abs(reconcut)); axis square; colormap fire; hold on;
+                if CC==1
+                    hFoci.figure = app.get_figure('find_foci');
+                    clf(hFoci.figure);
+                end
+                hFoci.axes(CC) = subplot(round(sqrt(Nfoci)),ceil(sqrt(Nfoci)),CC, 'parent', hFoci.figure); 
+                fociImage(CC) = imagesc(hFoci.axes(CC), abs(reconcut)); axis(hFoci.axes(CC), 'image'); 
+                colormap(hFoci.axes(CC), app.handles.colormap); hold(hFoci.axes(CC), 'on');
                 firstS(CC) = false;
             else
                 %                 subplot(Nfoci,1,CC);
-                set(fociImage(CC), 'CData', abs(gather(reconcut)));
+                fociImage(CC).CData = abs(gather(reconcut));
             end
             drawnow;
         end
@@ -88,15 +98,19 @@ for phase = z_start:ste:z_end
     i=i+1;
 end
 
-if use_gpu
-    focusedCuts = gpuArray(zeros(2*(Npixel+1),2*(Npixel+1), Nfoci));
-else
-    focusedCuts = zeros(2*(Npixel+1), 2*(Npixel+1), Nfoci);
+
+I=zeros(1,Nfoci);
+focusedCuts = zeros(2*(Npixel+1), 2*(Npixel+1), Nfoci);
+
+if app.handles.gpu
+    I = gpuArray(I);
+    focusedCuts = gpuArray(focusedCuts);   
 end
 
 index=true(1,1,Nfoci);
 nbrPixels=zeros(1,Nfoci);
-I=gpuArray(zeros(1,Nfoci));
+
+app.data.foci = nan(1,Nfoci);
 
 for CC=1:Nfoci
     a=1;
@@ -116,7 +130,7 @@ for CC=1:Nfoci
         continue
     end
     I = I+(a-1);
-    foci(CC) = x(I); %#ok<AGROW>
+    app.data.foci(CC) = x(I); %#ok<AGROW>
     N=round(x(I)/lambda);
     prop_l=N*lambda;
     tempPhase=prop_l*tempProp;
@@ -128,29 +142,34 @@ for CC=1:Nfoci
     centery = round(centroids(CC,1));
     rcut = real(recon(max(1,centerx-Npixel-1):min(Xrange,centerx+Npixel),max(1,centery-Npixel-1):min(Yrange,centery+Npixel)));
     focusedCuts(1:size(rcut,1),1:size(rcut,2),CC) = rcut;
-    colormap gray;
+%     colormap(app.handles.colormap);
 end
 
 if show_results
-    figure(3333);
+    hFociMet.figure = app.get_figure('foci_metric');
+    clf(hFociMet.figure);
+    hFociMet.axes = axes(hFociMet.figure);
     try
-        plot(x,metric)
+        plot(hFociMet.axes, x, metric)
     catch
         size(x)
         size(metric)
     end
+    app.handles.foci_metric = hFociMet;
 end
 
 Nfoci=sum(index);
 
-if show_results && Nfoci>0
-    figure(34555)
+if show_results
+    hFociRes.figure = app.get_figure('foci_results');
+    clf(hFociRes.figure);
+%     if Nfoci>0
     for CC=1:Nfoci
-        subplot(round(sqrt(Nfoci)),ceil(sqrt(Nfoci)),CC); imagesc(focusedCuts(:,:,CC)); axis square; 
-        try
-            title(['focus at ', num2str(round(x(I(CC)))), ', size ', num2str(nbrPixels(CC))]);
-        catch
-        end
-        colormap gray;
+        hFociRes.axes(CC) = subplot(round(sqrt(Nfoci)),ceil(sqrt(Nfoci)),CC, 'parent', hFociRes.figure); 
+        hFociRes.img(CC) = imagesc(hFociRes.axes(CC), focusedCuts(:,:,CC)); axis(hFociRes.axes(CC), 'image'); 
+        hFociRes.axes(CC).Title.String = sprintf('focus at %.0f, size = %.0f', app.data.foci(CC), nbrPixels(CC));
+        colormap(hFociRes.axes(CC), app.handles.colormap);
     end
+%     end
+    app.handles.foci_results = hFociRes;
 end

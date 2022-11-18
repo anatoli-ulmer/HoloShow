@@ -1,16 +1,20 @@
-function [aArray, rArray] = rmean(I, rMax, rCenter)
+function [aArray, rArray, bins] = rmean(I, rRange, rCenter, bins)
 % RMEAN  Radially average complex valued 2D matrix 'I' until maximum 
-% pixel radius 'rMax' around pixel position 'rCenter'.
+% pixel radius 'rRange' around pixel position 'rCenter'.
 % 
 % [aArray, rArray] = RMEAN(I)
 % 
 % [aArray, rArray] = RMEAN(I, rMax)
 % 
-% [aArray, rArray] = RMEAN(I, rMax, rCenter)
+% [aArray, rArray] = RMEAN(I, [rMin, rMax])
+% 
+% [aArray, rArray] = RMEAN(I, [rMin, rMax], rCenter)
 %
-% [aArray, rArray] = RMEAN(I, rMax, rCenter) computes 
-% the complex valued mean of pixels lying on circles with radii in the 
-% range from 0 to 'rMax', where the unit of 'rMax' is in pixels. 'rMax' is 
+% [aArray, rArray] = RMEAN(I, [rMin, rMax], rCenter) 
+
+% computes the complex valued mean of pixels lying on circles with radii in the 
+% range from 'rMin' to 'rMax', where the units of 'rMin' and 'rMax' are in 
+% pixels. 'rMin is 1 and 'rMax' is 
 % calculated by 'rMax = max(size(I))/2', if it was not specified. The 
 % center of each circle is given by 'rCenter = [yCenter, xCenter]' and is 
 % calculated by 'rCenter = ceil(size(I)/2)', if it was not specified. 
@@ -40,57 +44,81 @@ function [aArray, rArray] = rmean(I, rMax, rCenter)
 % radial distances r over grid of z
 % 6/20/16 DJF Excludes NaN values
 % 6/21/16 DJF Added origin offset
+% 
 % 2020-08-18 Changes by Anatoli Ulmer | anatoli.ulmer@gmail.com
 %   - adaption of output variable type to input variable type and added 
 %     complex value computation
 %   - changed inputs to (I,rMax,rCenter)
 %   - changed units of rMax and rCenter = [yCenter,xCenter] to absolute 
 %     pixel values
-%   - changed name to rmean
-%  David Fischer (2021). radialavg.zip (https://www.mathworks.com/matlabcentral/fileexchange/46468-radialavg-zip), MATLAB Central File Exchange. Retrieved July 16, 2021. 
+% 2021-12-16 Changes by Anatoli Ulmer | anatoli.ulmer@gmail.com
+%   - added rMin
     
     %%%%% begin init %%%%%
     
     nPixel = size(I, [1,2]);
     
-    if ~exist('rMax','var') || isempty(rMax)
-        rMax = max(nPixel)/2 * ones(1,'like',I);
-    end
-    if ~exist('rCenter','var')
+    if ~exist('rCenter','var') || isempty(rCenter)
         rCenter = floor(nPixel/2)+1;
-    end    
+    end
+    if ~exist('rRange','var') || isempty(rRange)
+        rRange = [1, max(nPixel)/2 * ones(1,'like',I)];
+    end
+
+    if numel(rRange)>2
+        calcArray = rRange;
+        rMin = calcArray(1);
+        rMax = calcArray(end);
+    else
+        rMin = rRange(1);
+        rMax = rRange(end); 
+        if numel(rRange)==1, rMin = 1; end
+        calcArray = rMin:rMax;
+    end
     
     xx = nan(nPixel, 'like', I);
     yy = nan(nPixel, 'like', I);
     rMatrix = nan(nPixel, 'like', I);
     rbins = linspace(0,rMax+1,rMax+1);
-    bins = true(nPixel);
+    
     
     % radial positions are midpoints of the bins(:,:)
 %     notNans = ~isnan(I); % identify NaNs in input data
     
     %%%%% end init %%%%%
     
-    
     % [xx(:,:), yy(:,:)] = meshgrid(linspace(-nPixel(1)/2,nPixel(1)/2,nPixel(1)), ...
     %     linspace(-nPixel(2)/2,nPixel(2)/2,nPixel(2)));
-    [xx(:,:), yy(:,:)] = meshgrid( (1:nPixel(1))-rCenter(1), ...
-        (1:nPixel(2))-rCenter(2) );
+    
+    [xx(:,:), yy(:,:)] = meshgrid( (1:nPixel(2))-rCenter(2), ...
+        (1:nPixel(1))-rCenter(1) );
     rMatrix(:,:) = sqrt( (xx).^2 + (yy).^2);
+    
     aArray = nan(1,rMax,'like', I); % vector for radial average
     % ravgR = 0:ravgMax-1;
     rArray = (rbins(1:end-1)+rbins(2:end))/2;
     
+
     % loop over the bins(:,:), except the final (r=1) position
     
-    for j=1:rMax
-        % find all matrix locations whose radial distance is in the jth bin
-%         % exclude data that is NaN
-        bins(:,:) = rMatrix>=rbins(j) & rMatrix<rbins(j+1);
-        aVals = I(bins);
-        aVals = aVals(~isnan(aVals));
-        aArray(j) = mean(aVals);
+    if nargout < 3
+        bins = true(nPixel);
+        for j = calcArray
+            % find all matrix locations whose radial distance is in the jth bin
+            bins(:,:) = rMatrix>=rbins(j) & rMatrix<rbins(j+1);
+            aArray(j) = mean(I(bins), 'omitnan');
+        end    
+    else
+        if ~exist('bins', 'var') || numel(bins) ~= numel(calcArray) || isempty(bins)
+            for j = calcArray
+                bins{j} = rMatrix>=rbins(j) & rMatrix<rbins(j+1);
+            end
+            for j = calcArray
+                aArray(j) = mean(I(bins{j}), 'omitnan');
+            end
+        end
     end
+    
 %         % count the number of those locations
 %         n = sum(bins(:));
 %         if n~=0

@@ -1,7 +1,8 @@
 %% modified segmentation algorithm from http://de.mathworks.com/help/images/examples/detecting-a-cell-using-image-segmentation.html
-function centroids = findCrossCorrelations(app, hologram, varargin)
+function centroids = findCrossCorrelations(app, hologram, parameter)
 
 show_img = true;
+show_segmenation = false;
 min_dist = 100;
 int_thresh = 5;
 r_ignored = 75;
@@ -10,24 +11,39 @@ r_erode = 10;
 fudge_factor = 1;
 crop_factor = 1;
 min_size = 500;
+delete_right = true;
 
-if exist('varargin','var')
-    L = length(varargin);
-    if rem(L,2) ~= 0, error('Parameters/Values must come in pairs.'); end
-    for ni = 1:2:L
-        switch lower(varargin{ni})
-            case 'show_img', show_img = varargin{ni+1};
-            case 'min_dist', min_dist = varargin{ni+1};
-            case 'int_thresh', int_thresh = varargin{ni+1};
-            case 'r_ignored', r_ignored = varargin{ni+1};
-            case 'r_dilate', r_dilate = varargin{ni+1};
-            case 'r_erode', r_erode = varargin{ni+1};
-            case 'fudge_factor', fudge_factor = varargin{ni+1};
-            case 'crop_factor', crop_factor = varargin{ni+1};
-            case 'min_size', min_size = varargin{ni+1};
-        end
-    end
+% if exist('varargin','var')
+%     L = length(varargin);
+%     if rem(L,2) ~= 0, error('Parameters/Values must come in pairs.'); end
+%     for ni = 1:2:L
+%         switch lower(varargin{ni})
+%             case 'show_img', show_img = varargin{ni+1};
+%             case 'min_dist', min_dist = varargin{ni+1}; 
+%             case 'int_thresh', int_thresh = varargin{ni+1};
+%             case 'r_ignored', r_ignored = varargin{ni+1};
+%             case 'r_dilate', r_dilate = varargin{ni+1};
+%             case 'r_erode', r_erode = varargin{ni+1};
+%             case 'fudge_factor', fudge_factor = varargin{ni+1};
+%             case 'crop_factor', crop_factor = varargin{ni+1};
+%             case 'min_size', min_size = varargin{ni+1};
+%         end
+%     end
+% end
+
+for p = fieldnames(parameter)'
+    eval(sprintf('%s = %f;', p{:}, parameter.(p{:})));
 end
+%             case 'show_img', show_img = varargin{ni+1};
+%             case 'min_dist', min_dist = varargin{ni+1};
+%             case 'int_thresh', int_thresh = varargin{ni+1};
+%             case 'r_ignored', r_ignored = varargin{ni+1};
+%             case 'r_dilate', r_dilate = varargin{ni+1};
+%             case 'r_erode', r_erode = varargin{ni+1};
+%             case 'fudge_factor', fudge_factor = varargin{ni+1};
+%             case 'crop_factor', crop_factor = varargin{ni+1};
+%             case 'min_size', min_size = varargin{ni+1};
+%         end
 
 if crop_factor>1
     hologram = crop_image(hologram, crop_factor);
@@ -93,7 +109,7 @@ while true
     if n>size(centroids,1)
         break
     end
-    if sum(abs(centroids(n,:) - [513, 513]).^2) < (1.5*r_ignored)^2
+    if sum(abs(centroids(n,:) - [513, 513]).^2) < (1*r_ignored)^2
         centroids(n,:) = [];
     else
         n=n+1;
@@ -121,31 +137,62 @@ end
 
 %% Show results
 
-if show_img
-    figure(4);
-    subplot(231); imagesc(img); axis square; colormap fire; title('original image');
-    subplot(232); imagesc(img_edges); axis square; colormap fire; title('binary gradient mask');
-    subplot(233); imagesc(img_dilated); axis square; title('dilated gradient mask');
-    subplot(234); imagesc(img_filled); axis square; title('binary image with filled holes');
-    subplot(235); imagesc(img_eroded); axis square; title('segmented image');
+if show_segmenation
+    h.figure = app.check_figure('segmentation','figure');
+    if isempty(h.figure) || ~isgraphics(h.figure)
+        h.figure = figure;
+        h.figure.Tag = 'segmentation.figure';
+        h.tl = tiledlayout(h.figure, 'flow');
+        h.axes(1) = nexttile(h.tl);
+        h.img(1) = imagesc(img); axis square; colormap fire; title('original image');
+        h.axes(2) = nexttile(h.tl);
+        h.img(2) = imagesc(img_edges); axis square; colormap fire; title('binary gradient mask');
+        h.axes(3) = nexttile(h.tl);
+        h.img(3) = imagesc(img_dilated); axis square; title('dilated gradient mask');
+        h.axes(4) = nexttile(h.tl);
+        h.img(4) = imagesc(img_filled); axis square; title('binary image with filled holes');
+        h.axes(5) = nexttile(h.tl);
+        h.img(5) = imagesc(img_eroded); axis square; title('segmented image');
+        app.handles.segmentation = h;
+    end
+    app.handles.segmentation.img(1).CData = img;
+    app.handles.segmentation.img(2).CData = img_edges;
+    app.handles.segmentation.img(3).CData = img_dilated;
+    app.handles.segmentation.img(4).CData = img_filled;
+    app.handles.segmentation.img(5).CData = img_eroded;
 
-    figure(41)
-    subplot(121); imagesc(log(abs(recon))); axis square;
-    subplot(122); imagesc(~img_eroded)
-    hold on
-    plot(centroids(:,1),centroids(:,2), 'r*')
-    hold off
-    axis square; colormap fire;
-    
     Npixel = 50;
-    figure(42)
-    
+    hSegRes.figure = app.get_figure('segmentation_results');
+    clf(hSegRes.figure);
     for i=1:size(centroids,1)
-        subplot(round(sqrt(size(centroids,1))),ceil(sqrt(size(centroids,1))),i);
+        hSegRes.ax(i) = subplot(round(sqrt(size(centroids,1))),ceil(sqrt(size(centroids,1))),i,'parent',hSegRes.figure);
         centerx = round(centroids(i,2));
         centery = round(centroids(i,1));
-        imagesc(recon_int(max(1,centerx-Npixel-1):min(Yrange,centerx+Npixel),max(1,centery-Npixel-1):min(Xrange,centery+Npixel))); axis square; colormap fire;
+        hSegRes.img(i) = imagesc(hSegRes.ax(i), recon_int(max(1,centerx-Npixel-1):min(Yrange,centerx+Npixel),max(1,centery-Npixel-1):min(Xrange,centery+Npixel))); 
+        axis(hSegRes.ax(i), 'image'); colormap(hSegRes.figure, hesperia);
     end
+
+end
+
+if show_img
+    
+    hCent.figure = app.get_figure('segmentation_centroids');
+    clf(hCent.figure);
+    hCent.axes(1) = subplot(1,2,1,'parent',hCent.figure); 
+    hCent.img(1) = imagesc(hCent.axes(1), log(abs(recon))); axis(hCent.axes(1), 'image');
+    hCent.axes(2) = subplot(1,2,2,'parent',hCent.figure); 
+    hCent.img(2) = imagesc(hCent.axes(2), ~img_eroded); axis(hCent.axes(2), 'image')
+    hCent.axes(2).NextPlot = 'add';
+    if ~isempty(centroids)
+        hCent.plt(1) = plot(hCent.axes(2), centroids(:,1),centroids(:,2), 'r*');
+    end
+    colormap(hCent.figure, hesperia);
+
+    if delete_right
+        centroids(centroids(:,2)<floor(size(hologram,2)/2), :) = [];
+    end
+    
+    
 end
 
 centroids = centroids * crop_factor;
