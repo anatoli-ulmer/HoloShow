@@ -70,9 +70,9 @@ INSTRUCTIONS:
 
 2.) Pick a file in the pre-chosen file list on the left or load new files with the button above the list. The button below the list will execute first evaluation steps.
 
-3.) In the reconstruction window you see the patterson map consisting of the autocorrelation in the center and cross correlation terms. With the button 'choose CC' you can pick a cross correlation term for further analysis by choosing an area with your mouse. Smaller ROIs will give better results.
+3.) In the reconstruction window you see the patterson map consisting of the autocorrelation in the center and cross correlation terms. You can zoom inside this window and with the button 'choose CC' the current view will be set as the new region of interest (ROI). Smaller ROIs will give better results.
 
-4.) The reconstruction is in the beginning defocused because the sample and the reference were not in the same plane. Refocussing can be done manually with the phase slider or automatically with the 'find phase' button. To change the range of the slider you can use the edit field on the right side. With phase here the distance between the particles and the belonging propagation operator is meant.
+4.) The reconstruction usually is defocused in the beginning, because the sample and the reference were not in the same plane. Refocussing can be done manually with the phase slider or automatically with the 'find phase' button. To change the range of the slider you can use the edit field on the right side. With phase here the distance between the particles and the belonging propagation operator is meant.
 
 5.) The focused reconstruction will still have artifacts due to unprecise centering of the hologram and position estimation of the two detector halves. To correct for these artifacts you can use the 'find center' and 'find shifts' buttons.
 
